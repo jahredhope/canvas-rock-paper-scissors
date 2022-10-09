@@ -6,11 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "npm run build && surge --domain absorbing-scarf.surge.sh dist"
   },
   "devDependencies": {
-    "typescript": "^4.6.4",
     "prettier": "^2.7.1",
+    "surge": "^0.23.1",
+    "typescript": "^4.6.4",
     "vite": "^3.1.0"
   }
 }
