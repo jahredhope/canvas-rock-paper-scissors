@@ -9,6 +9,10 @@ if (!canvas) {
   throw new Error("Unable to find canvas");
 }
 
+canvas.onclick = (e) => {
+  board.selectPoint({ x: e.clientX, y: e.clientY });
+};
+
 function onChangeCount() {
   const value = Number.parseInt(countInput.value);
   if (value) board.changeCount(value);

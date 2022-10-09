@@ -1,4 +1,5 @@
 import { Thing, Item } from "./piece";
+import { getDistance, Point } from "./point";
 
 export type BorderType = "solid" | "wrap";
 
@@ -20,6 +21,7 @@ export class Board {
   winner: Item | null = null;
   nextActive() {
     this.activeIndex++;
+    this.activeIndex = this.activeIndex % this.things.length;
   }
   noActive() {
     this.activeIndex = -1;
@@ -44,11 +46,23 @@ export class Board {
     this.thingsByType[i].push(t);
     t.item = i;
   }
+  selectPoint(pos: Point) {
+    let closest: Thing | null = null;
+    let shortestDistance = 50;
+    for (let v of this.things) {
+      const distance = getDistance(pos, v.pos);
+      if (distance < shortestDistance) {
+        closest = v;
+        shortestDistance = distance;
+      }
+    }
+    if (closest) this.activeIndex = this.things.indexOf(closest);
+    else this.activeIndex = -1;
+  }
   addRandom(i?: Item) {
-    console.log("Adding random item");
     if (!i) {
       const r = Math.random();
-      i = r > 0.666 ? "paper" : r > 0.333 ? "scissor" : "rock";
+      i = r > 0.66666 ? "paper" : r > 0.33333 ? "scissor" : "rock";
     }
     const t = new Thing(this.ctx, this, i, {
       x: Math.random() * this.width,
@@ -62,6 +76,7 @@ export class Board {
     this.thingsByType[t.item].splice(this.thingsByType[t.item].indexOf(t), 1);
   }
   reset() {
+    this.activeIndex = -1;
     this.winner = null;
     this.things = [];
     this.thingsByType = {
