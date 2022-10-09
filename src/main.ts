@@ -83,7 +83,7 @@ let lastFps = 0;
 let i = 0;
 
 function renderFps() {
-  ctx.fillStyle = "#FFFFFF20";
+  ctx.fillStyle = "#1a1a1a50";
   ctx.fillRect(canvas.width - 75, 0, 75, 50);
   const renderTime = performance.now();
   const elapsed = Math.round(renderTime - lastRenderTime);
@@ -114,8 +114,8 @@ function renderPaused() {
 }
 
 function renderScores() {
-  ctx.fillStyle = "#FFFFFF20";
-  ctx.fillRect(0, 0, 110, 110);
+  ctx.fillStyle = "#1a1a1a50";
+  ctx.fillRect(0, 0, 120, 110);
   ctx.fillStyle = "#7FFB50";
   ctx.font = `15px Georgia`;
   ctx.textAlign = "left";
