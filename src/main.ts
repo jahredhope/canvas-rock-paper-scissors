@@ -1,4 +1,4 @@
-import { Board } from "./game";
+import { Board } from "./board";
 import "./style.css";
 
 const countInput = document.getElementById("count") as HTMLInputElement;
@@ -124,28 +124,28 @@ function renderScores() {
   ctx.font = `15px Georgia`;
   ctx.textAlign = "left";
   ctx.fillText(
-    `Scissors: ${board.thingsByType["scissor"].length}`,
+    `Scissors: ${board.piecesByType["scissor"].length}`,
     10,
     30,
     4000
   );
-  ctx.fillText(`Rocks: ${board.thingsByType["rock"].length}`, 10, 60, 4000);
-  ctx.fillText(`Papers: ${board.thingsByType["paper"].length}`, 10, 90, 4000);
+  ctx.fillText(`Rocks: ${board.piecesByType["rock"].length}`, 10, 60, 4000);
+  ctx.fillText(`Papers: ${board.piecesByType["paper"].length}`, 10, 90, 4000);
 }
 
 function render() {
   i++;
   requestedAnimationFrame = null;
   if (playing && !board.winner) {
-    if (board.things.length < board.maxItems) {
+    if (board.pieces.length < board.maxItems) {
       board.addRandom();
     }
-    board.things.forEach((v) => v.onTick());
-    board.things = board.things.filter((v) => !v.toDelete);
+    board.pieces.forEach((v) => v.onTick());
+    board.pieces = board.pieces.filter((v) => !v.toDelete);
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  board.things.forEach((v, i) => v.onDraw(i === board.activeIndex));
+  board.pieces.forEach((v, i) => v.onDraw(i === board.activeIndex));
 
   renderFps();
 

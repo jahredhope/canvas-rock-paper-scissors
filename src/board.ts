@@ -1,4 +1,4 @@
-import { Thing, Item } from "./piece";
+import { Piece, Item } from "./piece";
 import { getDistance, Point } from "./point";
 
 export type BorderType = "solid" | "wrap";
@@ -11,8 +11,8 @@ export class Board {
     public maxItems: number,
     public borderType: BorderType
   ) {}
-  things: Thing[] = [];
-  thingsByType: Record<Item, Thing[]> = {
+  pieces: Piece[] = [];
+  piecesByType: Record<Item, Piece[]> = {
     rock: [],
     scissor: [],
     paper: [],
@@ -21,42 +21,40 @@ export class Board {
   winner: Item | null = null;
   nextActive() {
     this.activeIndex++;
-    this.activeIndex = this.activeIndex % this.things.length;
+    this.activeIndex = this.activeIndex % this.pieces.length;
   }
   noActive() {
     this.activeIndex = -1;
   }
-  addPiece(t: Thing) {
-    // console.log("Adding item", t.item);
-    this.things.push(t);
-    this.thingsByType[t.item].push(t);
+  addPiece(t: Piece) {
+    this.pieces.push(t);
+    this.piecesByType[t.item].push(t);
   }
   changeCount(count: number) {
     this.maxItems = count;
-    while (this.things.length > count) {
+    while (this.pieces.length > count) {
       this.removePiece();
     }
   }
-  change(t: Thing, i: Item) {
-    this.thingsByType[t.item].splice(this.thingsByType[t.item].indexOf(t), 1);
-    if (this.thingsByType[t.item].length === 0) {
+  change(t: Piece, i: Item) {
+    this.piecesByType[t.item].splice(this.piecesByType[t.item].indexOf(t), 1);
+    if (this.piecesByType[t.item].length === 0) {
       this.winner = i;
     }
-    // console.log(`Changed ${t.item} to ${i}`);
-    this.thingsByType[i].push(t);
+    this.piecesByType[i].push(t);
     t.item = i;
   }
   selectPoint(pos: Point) {
-    let closest: Thing | null = null;
+    let closest: Piece | null = null;
     let shortestDistance = 50;
-    for (let v of this.things) {
+    for (let v of this.pieces) {
       const distance = getDistance(pos, v.pos);
       if (distance < shortestDistance) {
         closest = v;
         shortestDistance = distance;
       }
     }
-    if (closest) this.activeIndex = this.things.indexOf(closest);
+    if (closest) this.activeIndex = this.pieces.indexOf(closest);
     else this.activeIndex = -1;
   }
   addRandom(i?: Item) {
@@ -64,22 +62,22 @@ export class Board {
       const r = Math.random();
       i = r > 0.66666 ? "paper" : r > 0.33333 ? "scissor" : "rock";
     }
-    const t = new Thing(this.ctx, this, i, {
+    const t = new Piece(this.ctx, this, i, {
       x: Math.random() * this.width,
       y: Math.random() * this.height,
     });
     this.addPiece(t);
   }
   removePiece() {
-    const t = this.things.pop();
+    const t = this.pieces.pop();
     if (!t) return;
-    this.thingsByType[t.item].splice(this.thingsByType[t.item].indexOf(t), 1);
+    this.piecesByType[t.item].splice(this.piecesByType[t.item].indexOf(t), 1);
   }
   reset() {
     this.activeIndex = -1;
     this.winner = null;
-    this.things = [];
-    this.thingsByType = {
+    this.pieces = [];
+    this.piecesByType = {
       rock: [],
       scissor: [],
       paper: [],

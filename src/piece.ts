@@ -1,4 +1,4 @@
-import { Board } from "./game";
+import { Board } from "./board";
 import {
   addition,
   difference,
@@ -22,10 +22,10 @@ const mapItemToPredator: Record<Item, Item> = {
 };
 
 function getClosestTo(
-  curr: Thing,
-  arr: Thing[]
-): { closest: Thing | null; distance: number } {
-  let closest: Thing | null = null;
+  curr: Piece,
+  arr: Piece[]
+): { closest: Piece | null; distance: number } {
+  let closest: Piece | null = null;
   let shortestDistance = Number.MAX_VALUE;
   for (let v of arr) {
     if (v === curr) {
@@ -40,7 +40,7 @@ function getClosestTo(
   return { closest, distance: shortestDistance };
 }
 
-export class Thing {
+export class Piece {
   constructor(
     private ctx: CanvasRenderingContext2D,
     private board: Board,
@@ -57,8 +57,8 @@ export class Thing {
   maxFlash = 5;
   shouldDrawBoundary = false;
 
-  closestPrey: Thing | null = null;
-  closestPredator: Thing | null = null;
+  closestPrey: Piece | null = null;
+  closestPredator: Piece | null = null;
 
   forceFromPredator: Point | null = null;
   forceFromPrey: Point | null = null;
@@ -147,21 +147,21 @@ export class Thing {
 
     let { closest: closestPrey, distance: distanceToPrey } = getClosestTo(
       this,
-      this.board.thingsByType[mapItemToPrey[this.item]]
+      this.board.piecesByType[mapItemToPrey[this.item]]
     );
     this.closestPrey = closestPrey;
     if (closestPrey && distanceToPrey < this.size * 1.5) {
       this.board.change(closestPrey, this.item);
     }
     let { closest: closestPredator, distance: distanceToPredator } =
-      getClosestTo(this, this.board.thingsByType[mapItemToPredator[this.item]]);
+      getClosestTo(this, this.board.piecesByType[mapItemToPredator[this.item]]);
     this.closestPredator = closestPredator;
     if (closestPredator && distanceToPredator < this.size * 1.5) {
       this.board.change(this, closestPredator.item);
     }
     let { closest: closestAlly, distance: distanceToAlly } = getClosestTo(
       this,
-      this.board.thingsByType[this.item]
+      this.board.piecesByType[this.item]
     );
     let directionToMove: Point = { x: 0, y: 0 };
     if (closestPrey) {

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "release": "npm run build && surge --domain absorbing-scarf.surge.sh dist"
+    "release": "npm run build && surge --domain rock-paper-scissors-zero-player.surge.sh dist"
   },
   "devDependencies": {
     "prettier": "^2.7.1",
