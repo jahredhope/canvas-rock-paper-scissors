@@ -42,7 +42,7 @@ export class Board {
   winner: Item | null = null;
 
   createSections() {
-    this.sections = createSections(this.height, this.width, 20);
+    this.sections = createSections(this.height, this.width, 30);
 
     this.sections.forEach((r) => {
       r.forEach((s) => {

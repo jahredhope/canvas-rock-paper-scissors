@@ -36,6 +36,8 @@ input {
   background-color: #1a1a1a50;
   cursor: pointer;
   transition: border-color 0.25s;
+
+  pointer-events: all;
 }
 button:hover {
   border-color: #646cff;
@@ -95,6 +97,7 @@ footer {
   justify-content: center;
   gap: 1em;
   padding: 1em;
+  pointer-events: none;
 }
 
 header {
@@ -103,6 +106,7 @@ header {
   top: 0;
   left: 0;
   width: 100vw;
+  pointer-events: none;
 
   flex: 0 0 60px;
   padding: 1em;
@@ -113,4 +117,5 @@ header {
 
 a {
   color: #dddddd;
+  pointer-events: all;
 }

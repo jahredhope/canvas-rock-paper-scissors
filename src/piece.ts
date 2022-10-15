@@ -160,7 +160,7 @@ export class Piece {
   startFlash() {
     this.flash = this.maxFlash;
   }
-  getClosestToByType(type: Item, maxLevel = 0) {
+  getClosestToByType(type: Item, maxLevel = Number.MAX_VALUE) {
     for (
       let i = 0;
       i < this.section.nearbyByLevel.length && i <= maxLevel;
@@ -175,13 +175,13 @@ export class Piece {
     if (this.flash > 0) this.flash -= 0.2;
 
     let { closest: closestPrey, distance: distanceToPrey } =
-      this.getClosestToByType(mapItemToPrey[this.item], 4);
+      this.getClosestToByType(mapItemToPrey[this.item]);
     this.closestPrey = closestPrey;
     if (closestPrey && distanceToPrey < this.size * 1.5) {
       this.board.change(closestPrey, this.item);
     }
     let { closest: closestPredator, distance: distanceToPredator } =
-      this.getClosestToByType(mapItemToPredator[this.item]);
+      this.getClosestToByType(mapItemToPredator[this.item], 2);
     this.closestPredator = closestPredator;
     if (closestPredator && distanceToPredator < this.size * 1.5) {
       this.board.change(this, closestPredator.item);
