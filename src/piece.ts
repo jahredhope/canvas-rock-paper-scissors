@@ -1,4 +1,4 @@
-import { Board } from "./board";
+import { Board, Section } from "./board";
 import {
   addition,
   difference,
@@ -23,18 +23,25 @@ const mapItemToPredator: Record<Item, Item> = {
 
 function getClosestTo(
   curr: Piece,
-  arr: Piece[]
+  arrOfArr: Piece[][]
 ): { closest: Piece | null; distance: number } {
   let closest: Piece | null = null;
   let shortestDistance = Number.MAX_VALUE;
-  for (let v of arr) {
-    if (v === curr) {
-      continue;
-    }
-    const distance = getDistance(curr.pos, v.pos);
-    if (distance < shortestDistance) {
-      closest = v;
-      shortestDistance = distance;
+  for (let arr of arrOfArr) {
+    for (let v of arr) {
+      if (v === curr) {
+        continue;
+      }
+      if (
+        Math.abs(curr.pos.x - v.pos.x) + Math.abs(curr.pos.y - v.pos.y) >
+        shortestDistance * 1.45
+      )
+        continue;
+      const distance = getDistance(curr.pos, v.pos);
+      if (distance < shortestDistance) {
+        closest = v;
+        shortestDistance = distance;
+      }
     }
   }
   return { closest, distance: shortestDistance };
@@ -47,12 +54,18 @@ export class Piece {
     public item: Item,
     public pos: Point
   ) {
-    this.size = board.width > 500 ? 15 : 10;
+    this.size = board.width > 500 ? 12 : 6;
+    this.section = this.board.getSection(this.pos);
+    this.section.piecesByType[this.item].push(this);
   }
+  updateSection() {
+    this.section = this.board.getSection(this.pos);
+    this.section.piecesByType[this.item].push(this);
+  }
+  section: Section;
   dir: Point = { x: 0, y: 0 };
   size: number;
   speed = 1;
-  toDelete = false;
   flash = 0;
   maxFlash = 5;
   shouldDrawBoundary = false;
@@ -62,6 +75,14 @@ export class Piece {
 
   forceFromPredator: Point | null = null;
   forceFromPrey: Point | null = null;
+
+  getNearbyItems(type: Item, level: number) {
+    const r = [];
+    for (let s of this.section.nearbyByLevel[level]) {
+      r.push(s.piecesByType[type]);
+    }
+    return r;
+  }
 
   getColor() {
     switch (this.item) {
@@ -139,30 +160,34 @@ export class Piece {
   startFlash() {
     this.flash = this.maxFlash;
   }
+  getClosestToByType(type: Item, maxLevel = 0) {
+    for (
+      let i = 0;
+      i < this.section.nearbyByLevel.length && i <= maxLevel;
+      i++
+    ) {
+      let res = getClosestTo(this, this.getNearbyItems(type, i));
+      if (res.closest) return res;
+    }
+    return { closest: null, distance: Number.MAX_VALUE };
+  }
   onTick() {
     if (this.flash > 0) this.flash -= 0.2;
-    if (this.toDelete) {
-      return;
-    }
 
-    let { closest: closestPrey, distance: distanceToPrey } = getClosestTo(
-      this,
-      this.board.piecesByType[mapItemToPrey[this.item]]
-    );
+    let { closest: closestPrey, distance: distanceToPrey } =
+      this.getClosestToByType(mapItemToPrey[this.item], 4);
     this.closestPrey = closestPrey;
     if (closestPrey && distanceToPrey < this.size * 1.5) {
       this.board.change(closestPrey, this.item);
     }
     let { closest: closestPredator, distance: distanceToPredator } =
-      getClosestTo(this, this.board.piecesByType[mapItemToPredator[this.item]]);
+      this.getClosestToByType(mapItemToPredator[this.item]);
     this.closestPredator = closestPredator;
     if (closestPredator && distanceToPredator < this.size * 1.5) {
       this.board.change(this, closestPredator.item);
     }
-    let { closest: closestAlly, distance: distanceToAlly } = getClosestTo(
-      this,
-      this.board.piecesByType[this.item]
-    );
+    let { closest: closestAlly, distance: distanceToAlly } =
+      this.getClosestToByType(this.item, 1);
     let directionToMove: Point = { x: 0, y: 0 };
     if (closestPrey) {
       this.forceFromPrey = normalize(difference(closestPrey.pos, this.pos));
@@ -217,6 +242,20 @@ export class Piece {
         this.pos.x = this.board.width - this.size;
       if (this.pos.y > this.board.height - this.size)
         this.pos.y = this.board.height - this.size;
+    }
+
+    if (
+      this.pos.x < this.section.start.x ||
+      this.pos.x > this.section.end.x ||
+      this.pos.y < this.section.start.y ||
+      this.pos.y > this.section.end.y
+    ) {
+      this.section.piecesByType[this.item].splice(
+        this.section.piecesByType[this.item].indexOf(this),
+        1
+      );
+      this.section = this.board.getSection(this.pos);
+      this.section.piecesByType[this.item].push(this);
     }
   }
 }

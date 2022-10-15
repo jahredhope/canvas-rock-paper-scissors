@@ -1,3 +1,7 @@
+* {
+  box-sizing: border-box;
+}
+
 :root {
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", Segoe UI Symbol;
@@ -14,23 +18,24 @@
 
 body {
   margin: 0;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #333;
 }
 
 button,
 input {
   border-radius: 8px;
   border: 1px solid transparent;
-  padding: 0.6em 1.2em;
+  padding: 0.7em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a50;
   cursor: pointer;
   transition: border-color 0.25s;
-
-  position: fixed;
-  z-index: 1;
 }
 button:hover {
   border-color: #646cff;
@@ -54,25 +59,58 @@ button:focus-visible {
 }
 
 canvas {
-  position: fixed;
-  left: 0;
+  position: absolute;
   top: 0;
-  height: 100vh;
-  width: 100vw;
+  left: 0;
   box-sizing: border-box;
-}
-
-#pause {
-  bottom: 10px;
-  left: 10px;
-}
-#reset {
-  bottom: 10px;
-  left: 110px;
+  flex: 0 1 0;
 }
 
 #count {
-  bottom: 10px;
-  left: 210px;
-  width: 70px;
+  width: 110px;
+}
+
+#github {
+  margin-left: auto;
+  display: block;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1em;
+}
+
+#github img {
+  height: 32px;
+  width: 32px;
+}
+
+footer {
+  z-index: 1;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1em;
+  padding: 1em;
+}
+
+header {
+  z-index: 1;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+
+  flex: 0 0 60px;
+  padding: 1em;
+  display: flex;
+  gap: 1em;
+  flex-direction: row;
+}
+
+a {
+  color: #dddddd;
 }

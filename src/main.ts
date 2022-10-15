@@ -4,6 +4,7 @@ import "./style.css";
 const countInput = document.getElementById("count") as HTMLInputElement;
 const pauseButton = document.getElementById("pause") as HTMLButtonElement;
 const resetButton = document.getElementById("reset") as HTMLButtonElement;
+const fastForwardButton = document.getElementById("fast") as HTMLButtonElement;
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 if (!canvas) {
   throw new Error("Unable to find canvas");
@@ -18,14 +19,19 @@ function onChangeCount() {
   if (value) board.changeCount(value);
 }
 countInput.onchange = onChangeCount;
-canvas.width = document.body.scrollWidth;
-canvas.height = document.body.scrollHeight;
+const rect = canvas.getBoundingClientRect();
+canvas.width = rect.width;
+canvas.height = rect.height;
+
+fastForwardButton.onclick = () => {
+  board.speed = board.speed === 1 ? 3 : 1;
+};
 
 let ctx = canvas.getContext("2d")!;
 
 const _maxItems = Math.min(
-  Math.ceil(canvas.height * canvas.width * 0.0004),
-  500
+  Math.ceil(canvas.height * canvas.width * 0.005),
+  600
 );
 countInput.value = _maxItems.toString();
 const board = new Board(ctx, canvas.height, canvas.width, _maxItems, "solid");
@@ -34,14 +40,11 @@ function onResize() {
   canvas.width = document.body.scrollWidth;
   canvas.height = document.body.scrollHeight;
 
-  board.width = canvas.width;
-  board.height = canvas.height;
+  board.changeSize(canvas.width, canvas.height);
 }
 
 window.onresize = onResize;
 onResize();
-
-console.log(`Based on screen size choosing ${board.maxItems} items`);
 
 board.reset();
 
@@ -86,9 +89,35 @@ let lastRenderTime = performance.now();
 let lastFps = 0;
 let i = 0;
 
-function renderFps() {
+function renderPaused() {
+  ctx.fillStyle = "#7FFB50";
+  ctx.font = `30px Georgia`;
+  ctx.textAlign = "center";
+  ctx.fillText(`⏸`, canvas.width / 2, 50, 40000);
+}
+function renderFast() {
+  ctx.fillStyle = "#7FFB50";
+  ctx.font = `30px Georgia`;
+  ctx.textAlign = "center";
+  ctx.fillText(`⏩`, canvas.width / 2, 50, 40000);
+}
+
+function renderScores() {
   ctx.fillStyle = "#1a1a1a50";
-  ctx.fillRect(canvas.width - 75, 0, 75, 50);
+  ctx.fillRect(0, 0, 120, 170);
+  ctx.fillStyle = "#7FFB50";
+  ctx.font = `15px Georgia`;
+  ctx.textAlign = "left";
+  ctx.fillText(`Total: ${board.pieces.length}`, 10, 30, 4000);
+  ctx.fillText(
+    `Scissors: ${board.piecesByType["scissor"].length}`,
+    10,
+    60,
+    4000
+  );
+  ctx.fillText(`Rocks: ${board.piecesByType["rock"].length}`, 10, 90, 4000);
+  ctx.fillText(`Papers: ${board.piecesByType["paper"].length}`, 10, 120, 4000);
+
   const renderTime = performance.now();
   const elapsed = Math.round(renderTime - lastRenderTime);
   lastRenderTime = renderTime;
@@ -98,56 +127,22 @@ function renderFps() {
 
     lastFps = Math.floor(fpsScores.reduce((a, b) => a + b) / fpsScores.length);
   }
-
-  ctx.fillStyle = "#7FFB50";
-  ctx.font = `15px Georgia`;
-  ctx.textAlign = "right";
-  ctx.fillText(`FPS: ${lastFps}`, canvas.width - 10, 25, 500);
-}
-
-function renderPaused() {
-  ctx.fillStyle = "#7FFB50";
-  ctx.font = `30px Georgia`;
-  ctx.textAlign = "center";
-  ctx.fillText(
-    `Press Space to Play (R to restart)`,
-    canvas.width / 2,
-    canvas.height / 2 + 50,
-    40000
-  );
-}
-
-function renderScores() {
-  ctx.fillStyle = "#1a1a1a50";
-  ctx.fillRect(0, 0, 120, 110);
-  ctx.fillStyle = "#7FFB50";
-  ctx.font = `15px Georgia`;
-  ctx.textAlign = "left";
-  ctx.fillText(
-    `Scissors: ${board.piecesByType["scissor"].length}`,
-    10,
-    30,
-    4000
-  );
-  ctx.fillText(`Rocks: ${board.piecesByType["rock"].length}`, 10, 60, 4000);
-  ctx.fillText(`Papers: ${board.piecesByType["paper"].length}`, 10, 90, 4000);
+  ctx.fillText(`FPS: ${lastFps}`, 10, 150, 500);
 }
 
 function render() {
   i++;
   requestedAnimationFrame = null;
   if (playing && !board.winner) {
-    if (board.pieces.length < board.maxItems) {
-      board.addRandom();
+    for (let i = 0; i < board.speed; i++) {
+      if (board.pieces.length < board.maxItems) {
+        board.addRandom();
+      }
+      board.pieces.forEach((v) => v.onTick());
     }
-    board.pieces.forEach((v) => v.onTick());
-    board.pieces = board.pieces.filter((v) => !v.toDelete);
   }
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   board.pieces.forEach((v, i) => v.onDraw(i === board.activeIndex));
-
-  renderFps();
 
   if (board.winner) {
     ctx.fillStyle = "#7FFB50";
@@ -166,11 +161,9 @@ function render() {
       40000
     );
   }
+  if (board.speed > 1) renderFast();
+  if (!playing && !board.winner) renderPaused();
 
-  ctx.textBaseline = "middle";
-  if (!playing && !board.winner) {
-    renderPaused();
-  }
   renderScores();
 
   if (requestedAnimationFrame === null)

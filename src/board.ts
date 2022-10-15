@@ -1,7 +1,23 @@
 import { Piece, Item } from "./piece";
 import { getDistance, Point } from "./point";
+import { createSections, getNearbySectionsByLevel } from "./section";
 
 export type BorderType = "solid" | "wrap";
+
+export interface Section {
+  x: number;
+  y: number;
+  /**
+   * Top Left
+   */
+  start: Point;
+  /**
+   * Bottom Right
+   */
+  end: Point;
+  piecesByType: Record<Item, Piece[]>;
+  nearbyByLevel: Section[][];
+}
 
 export class Board {
   constructor(
@@ -10,15 +26,43 @@ export class Board {
     public width: number,
     public maxItems: number,
     public borderType: BorderType
-  ) {}
+  ) {
+    this.createSections();
+  }
+
   pieces: Piece[] = [];
   piecesByType: Record<Item, Piece[]> = {
     rock: [],
     scissor: [],
     paper: [],
   };
+  speed = 1;
+  sections: Section[][] = [];
   activeIndex = -1;
   winner: Item | null = null;
+
+  createSections() {
+    this.sections = createSections(this.height, this.width, 20);
+
+    this.sections.forEach((r) => {
+      r.forEach((s) => {
+        s.nearbyByLevel = getNearbySectionsByLevel(s, this.sections);
+      });
+    });
+    this.pieces.forEach((p) => p.updateSection());
+  }
+  changeSize(width: number, height: number) {
+    this.width = width;
+    this.height = height;
+    this.createSections();
+  }
+  getSection(p: Point) {
+    const section = this.sections
+      .find((r) => p.y < r[0].end.y)
+      ?.find((s) => p.x < s.end.x);
+    if (!section) throw new Error("No section for point");
+    return section;
+  }
   nextActive() {
     this.activeIndex++;
     this.activeIndex = this.activeIndex % this.pieces.length;
@@ -38,10 +82,15 @@ export class Board {
   }
   change(t: Piece, i: Item) {
     this.piecesByType[t.item].splice(this.piecesByType[t.item].indexOf(t), 1);
+    t.section.piecesByType[t.item].splice(
+      t.section.piecesByType[t.item].indexOf(t),
+      1
+    );
     if (this.piecesByType[t.item].length === 0) {
       this.winner = i;
     }
     this.piecesByType[i].push(t);
+    t.section.piecesByType[i].push(t);
     t.item = i;
   }
   selectPoint(pos: Point) {
@@ -82,6 +131,8 @@ export class Board {
       scissor: [],
       paper: [],
     };
+    this.createSections();
+
     for (let i = 0; i < this.maxItems / 3; i++) {
       this.addRandom("paper");
       this.addRandom("scissor");
