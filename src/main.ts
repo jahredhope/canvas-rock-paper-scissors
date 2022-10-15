@@ -29,8 +29,11 @@ fastForwardButton.onclick = () => {
 
 let ctx = canvas.getContext("2d")!;
 
+canvas.width = document.body.scrollWidth;
+canvas.height = document.body.scrollHeight;
+
 const _maxItems = Math.min(
-  Math.ceil(canvas.height * canvas.width * 0.005),
+  Math.ceil(canvas.height * canvas.width * 0.0005),
   600
 );
 countInput.value = _maxItems.toString();
@@ -44,7 +47,6 @@ function onResize() {
 }
 
 window.onresize = onResize;
-onResize();
 
 board.reset();
 

@@ -54,7 +54,7 @@ export class Piece {
     public item: Item,
     public pos: Point
   ) {
-    this.size = board.width > 500 ? 12 : 6;
+    this.size = board.width > 500 ? 12 : 8;
     this.section = this.board.getSection(this.pos);
     this.section.piecesByType[this.item].push(this);
   }
