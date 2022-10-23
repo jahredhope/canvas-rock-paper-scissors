@@ -21,13 +21,13 @@ export interface Section {
 
 export class Board {
   constructor(
-    private ctx: CanvasRenderingContext2D,
     public height: number,
     public width: number,
     public maxItems: number,
     public borderType: BorderType
   ) {
     this.createSections();
+    this.reset();
   }
 
   pieces: Piece[] = [];
@@ -40,6 +40,10 @@ export class Board {
   sections: Section[][] = [];
   activeIndex = -1;
   winner: Item | null = null;
+
+  update() {
+    this.pieces.forEach((v) => v.onTick());
+  }
 
   createSections() {
     this.sections = createSections(this.height, this.width, 30);
@@ -111,7 +115,7 @@ export class Board {
       const r = Math.random();
       i = r > 0.66666 ? "paper" : r > 0.33333 ? "scissor" : "rock";
     }
-    const t = new Piece(this.ctx, this, i, {
+    const t = new Piece(this, i, {
       x: Math.random() * this.width,
       y: Math.random() * this.height,
     });

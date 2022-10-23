@@ -48,12 +48,7 @@ function getClosestTo(
 }
 
 export class Piece {
-  constructor(
-    private ctx: CanvasRenderingContext2D,
-    private board: Board,
-    public item: Item,
-    public pos: Point
-  ) {
+  constructor(private board: Board, public item: Item, public pos: Point) {
     this.size = board.width > 500 ? 12 : 8;
     this.section = this.board.getSection(this.pos);
     this.section.piecesByType[this.item].push(this);
@@ -104,37 +99,37 @@ export class Piece {
         return "✂️";
     }
   }
-  drawArrow(p: Point, color: string, m = 1) {
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.pos.x, this.pos.y);
+  drawArrow(ctx: CanvasRenderingContext2D, p: Point, color: string, m = 1) {
+    ctx.beginPath();
+    ctx.moveTo(this.pos.x, this.pos.y);
     const tip = addition(this.pos, multiply(p, m));
-    this.ctx.lineTo(tip.x, tip.y);
-    this.ctx.lineWidth = this.size / 2;
-    this.ctx.strokeStyle = color;
-    this.ctx.stroke();
+    ctx.lineTo(tip.x, tip.y);
+    ctx.lineWidth = this.size / 2;
+    ctx.strokeStyle = color;
+    ctx.stroke();
   }
-  drawCircle(color: string) {
-    this.ctx.beginPath();
-    this.ctx.arc(this.pos.x, this.pos.y, this.size * 2, 0, 2 * Math.PI, false);
-    this.ctx.fillStyle = color;
-    this.ctx.fill();
+  drawCircle(ctx: CanvasRenderingContext2D, color: string) {
+    ctx.beginPath();
+    ctx.arc(this.pos.x, this.pos.y, this.size * 2, 0, 2 * Math.PI, false);
+    ctx.fillStyle = color;
+    ctx.fill();
   }
-  onDraw(active: boolean) {
+  onDraw(ctx: CanvasRenderingContext2D, active: boolean) {
     if (active) {
-      this.drawCircle("#FFFF0066");
-      this.closestPredator?.drawCircle("#FF000044");
-      this.closestPrey?.drawCircle("#00FF0044");
-      this.drawArrow(this.dir, "#FFFF0066", this.size * 5);
+      this.drawCircle(ctx, "#FFFF0066");
+      this.closestPredator?.drawCircle(ctx, "#FF000044");
+      this.closestPrey?.drawCircle(ctx, "#00FF0044");
+      this.drawArrow(ctx, this.dir, "#FFFF0066", this.size * 5);
       this.forceFromPrey &&
-        this.drawArrow(this.forceFromPrey, "green", this.size * 5);
+        this.drawArrow(ctx, this.forceFromPrey, "green", this.size * 5);
       this.forceFromPredator &&
-        this.drawArrow(this.forceFromPredator, "red", this.size * 5);
+        this.drawArrow(ctx, this.forceFromPredator, "red", this.size * 5);
     }
     if (this.flash > 0) {
       const additionalSize =
         this.maxFlash - Math.abs(this.flash - this.maxFlash / 2);
-      this.ctx.beginPath();
-      this.ctx.arc(
+      ctx.beginPath();
+      ctx.arc(
         this.pos.x,
         this.pos.y,
         this.size + additionalSize,
@@ -142,20 +137,20 @@ export class Piece {
         2 * Math.PI,
         false
       );
-      this.ctx.fillStyle = "#FFFFFF66";
-      this.ctx.fill();
+      ctx.fillStyle = "#FFFFFF66";
+      ctx.fill();
     }
     if (this.shouldDrawBoundary) {
-      this.ctx.beginPath();
-      this.ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI, false);
-      this.ctx.fillStyle = "#FFFFFF";
-      this.ctx.fill();
+      ctx.beginPath();
+      ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI, false);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fill();
     }
-    this.ctx.fillStyle = this.getColor();
-    this.ctx.textAlign = "center";
-    this.ctx.textBaseline = "middle";
-    this.ctx.font = `${this.size * 2}px Georgia`;
-    this.ctx.fillText(this.getText(), this.pos.x, this.pos.y, this.size * 20);
+    ctx.fillStyle = this.getColor();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `${this.size * 2}px Georgia`;
+    ctx.fillText(this.getText(), this.pos.x, this.pos.y, this.size * 20);
   }
   startFlash() {
     this.flash = this.maxFlash;
