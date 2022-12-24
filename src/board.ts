@@ -163,7 +163,7 @@ export class Board {
     ctx.fillText(`⏩`, canvas.width / 2, 50, 40000);
   }
 
-  renderScores(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+  renderScores(ctx: CanvasRenderingContext2D, _canvas: HTMLCanvasElement) {
     ctx.fillStyle = "#1a1a1a50";
     ctx.fillRect(0, 0, 120, 170);
     ctx.fillStyle = "#7FFB50";

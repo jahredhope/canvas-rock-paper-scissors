@@ -29,6 +29,6 @@ export async function createSeed(str: string) {
   const data = encoder.encode(str.toLowerCase());
   const hash = await crypto.subtle.digest("SHA-256", data);
   const intArr = new Int32Array(hash);
-  const value = intArr[0];
+  const value = Math.abs(intArr[0]);
   return value;
 }

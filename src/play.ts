@@ -33,6 +33,7 @@ export async function playGame() {
     // Prepare
     board.state.renderCount++;
     requestedAnimationFrame = null;
+    if (board.state.playing === false) return;
 
     // Update
     if (board.state.playing && !board.winner) {

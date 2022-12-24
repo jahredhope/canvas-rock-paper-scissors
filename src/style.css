@@ -68,8 +68,11 @@ canvas {
   flex: 0 1 0;
 }
 
-#count {
+.normal {
   width: 110px;
+}
+.wide {
+  width: 220px;
 }
 
 #github {
@@ -132,4 +135,8 @@ a {
   flex-direction: column;
   gap: 1em;
   align-items: flex-end;
+}
+
+#side.hide {
+  display: none;
 }

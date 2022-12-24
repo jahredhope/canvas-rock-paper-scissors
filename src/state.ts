@@ -24,6 +24,23 @@ export function getInitialState(canvas: HTMLCanvasElement): State {
   const maxItems =
     rMaxItems || Math.min(Math.ceil(height * width * 0.0004), 600);
 
+  if (height < 100 || width < 100) {
+    console.error("Something went wrong");
+    console.error({
+      rHeight,
+      rWidth,
+      rMaxItems,
+      autoSize,
+      height,
+      width,
+      maxItems,
+      ch: canvas.height,
+      cw: canvas.width,
+      dh: document.body.scrollHeight,
+      dw: document.body.scrollWidth,
+    });
+  }
+
   return {
     height,
     width,

@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { Section } from "./board";
 import {
   createSections,
   getNearbySections,
   getNearbySectionsByLevel,
+  Section,
 } from "./section";
 
 describe("section", () => {

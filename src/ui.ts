@@ -2,9 +2,12 @@ import { Board } from "./board";
 
 export function getUIElements() {
   return {
+    sidePanel: document.getElementById("side") as HTMLDivElement,
+
     pauseButton: document.getElementById("pause") as HTMLButtonElement,
     resetButton: document.getElementById("reset") as HTMLButtonElement,
     fastFwdButton: document.getElementById("fast") as HTMLButtonElement,
+    moreButton: document.getElementById("more") as HTMLButtonElement,
 
     countInput: document.getElementById("count") as HTMLInputElement,
 
@@ -89,5 +92,11 @@ export function setupUI(
   elements.countInput.onchange = onChangeCount;
   elements.fastFwdButton.onclick = () => {
     board.state.speed = board.state.speed === 1 ? 3 : 1;
+  };
+
+  elements.moreButton.onclick = () => {
+    if (elements.sidePanel.classList.contains("hide"))
+      elements.sidePanel.classList.remove("hide");
+    else elements.sidePanel.classList.add("hide");
   };
 }

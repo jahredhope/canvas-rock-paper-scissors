@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rock Paper Scissors - The Game</title>
+    <link
+      rel="icon"
+      type="image/png"
+      href="src/assets/scissors_emoji_apple.png"
+    />
   </head>
   <body>
     <header>
@@ -17,20 +22,33 @@
       </a>
     </header>
     <canvas id="canvas"></canvas>
-    <div id="side">
+    <div id="side" class="hide">
       <div>
         <label for="autosize">Autosize</label
         ><input id="autosize" type="checkbox" />
       </div>
-      <input id="height" type="number" pattern="\d*" />
-      <input id="width" type="number" pattern="\d*" />
-      <input id="seed" type="text" />
+      <button id="fast">>></button>
+      <div>
+        <label>Items</label>
+        <input class="normal" id="count" type="number" pattern="\d*" />
+      </div>
+      <div>
+        <label>Height</label>
+        <input class="normal" id="height" type="number" pattern="\d*" />
+      </div>
+      <div>
+        <label>Width</label>
+        <input class="normal" id="width" type="number" pattern="\d*" />
+      </div>
+      <div>
+        <label>Seed</label>
+        <input class="wide" id="seed" type="text" />
+      </div>
     </div>
     <footer>
       <button id="reset">Reset</button>
       <button id="pause">Pause</button>
-      <button id="fast">>></button>
-      <input id="count" type="number" pattern="\d*" />
+      <button id="more">More</button>
     </footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
