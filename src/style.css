@@ -119,3 +119,17 @@ a {
   color: #dddddd;
   pointer-events: all;
 }
+
+#side {
+  z-index: 1;
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 1em;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  align-items: flex-end;
+}

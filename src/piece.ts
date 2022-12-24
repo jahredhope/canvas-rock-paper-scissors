@@ -1,4 +1,4 @@
-import { Board, Section } from "./board";
+import { Board } from "./board";
 import {
   addition,
   difference,
@@ -11,6 +11,7 @@ import {
 import scissorSrc from "./assets/scissors_emoji_apple.png";
 import paperSrc from "./assets/page_emoji_apple.png";
 import rockSrc from "./assets/rock_emoji_apple.png";
+import { Section } from "./section";
 
 export type Item = "rock" | "paper" | "scissor";
 
@@ -66,7 +67,7 @@ function getClosestTo(
 
 export class Piece {
   constructor(private board: Board, public item: Item, public pos: Point) {
-    this.size = board.width > 500 ? 12 : 8;
+    this.size = board.state.width > 500 ? 12 : 8;
     this.section = this.board.getSection(this.pos);
     this.section.piecesByType[this.item].push(this);
   }
@@ -78,8 +79,6 @@ export class Piece {
   dir: Point = [0, 0];
   size: number;
   speed = 1;
-  flash = 0;
-  maxFlash = 5;
   shouldDrawBoundary = false;
 
   closestPrey: Piece | null = null;
@@ -142,21 +141,6 @@ export class Piece {
       this.forceFromPredator &&
         this.drawArrow(ctx, this.forceFromPredator, "red", this.size * 5);
     }
-    if (this.flash > 0) {
-      const additionalSize =
-        this.maxFlash - Math.abs(this.flash - this.maxFlash / 2);
-      ctx.beginPath();
-      ctx.arc(
-        this.pos[0],
-        this.pos[1],
-        this.size + additionalSize,
-        0,
-        2 * Math.PI,
-        false
-      );
-      ctx.fillStyle = "#FFFFFF66";
-      ctx.fill();
-    }
     if (this.shouldDrawBoundary) {
       ctx.beginPath();
       ctx.arc(this.pos[0], this.pos[1], this.size, 0, 2 * Math.PI, false);
@@ -183,9 +167,6 @@ export class Piece {
       );
     }
   }
-  startFlash() {
-    this.flash = this.maxFlash;
-  }
   getClosestToByType(type: Item, maxLevel = Number.MAX_VALUE) {
     for (
       let i = 0;
@@ -197,9 +178,8 @@ export class Piece {
     }
     return { closest: null, distance: Number.MAX_VALUE };
   }
-  onTick() {
-    if (this.flash > 0) this.flash -= 0.2;
 
+  think() {
     let { closest: closestPrey, distance: distanceToPrey } =
       this.getClosestToByType(mapItemToPrey[this.item]);
     this.closestPrey = closestPrey;
@@ -250,25 +230,17 @@ export class Piece {
     directionToMove = normalize(directionToMove);
 
     this.dir = directionToMove;
+  }
+  move() {
+    this.pos[0] += this.dir[0] * this.speed;
+    this.pos[1] += this.dir[1] * this.speed;
 
-    this.pos[0] += directionToMove[0] * this.speed;
-    this.pos[1] += directionToMove[1] * this.speed;
-
-    if (this.board.borderType === "wrap") {
-      // Wrap
-      if (this.pos[0] < 0) this.pos[0] += this.board.width;
-      if (this.pos[1] < 0) this.pos[1] += this.board.height;
-      if (this.pos[0] > this.board.width - 0) this.pos[0] -= this.board.width;
-      if (this.pos[1] > this.board.height - 0) this.pos[1] -= this.board.height;
-    } else {
-      // Border
-      if (this.pos[0] < this.size) this.pos[0] = this.size;
-      if (this.pos[1] < this.size) this.pos[1] = this.size;
-      if (this.pos[0] > this.board.width - this.size)
-        this.pos[0] = this.board.width - this.size;
-      if (this.pos[1] > this.board.height - this.size)
-        this.pos[1] = this.board.height - this.size;
-    }
+    if (this.pos[0] < this.size) this.pos[0] = this.size;
+    if (this.pos[1] < this.size) this.pos[1] = this.size;
+    if (this.pos[0] > this.board.state.width - this.size)
+      this.pos[0] = this.board.state.width - this.size;
+    if (this.pos[1] > this.board.state.height - this.size)
+      this.pos[1] = this.board.state.height - this.size;
 
     if (
       this.pos[0] < this.section.start[0] ||

@@ -1,4 +1,4 @@
-import { Section } from "./board";
+import { Item, Piece } from "./piece";
 import { Point } from "./point";
 
 export function createSections(
@@ -76,4 +76,19 @@ export function getNearbySectionsByLevel(section: Section, all: Section[][]) {
     res.push(arr);
   }
   return res;
+}
+
+export interface Section {
+  x: number;
+  y: number;
+  /**
+   * Top Left
+   */
+  start: Point;
+  /**
+   * Bottom Right
+   */
+  end: Point;
+  piecesByType: Record<Item, Piece[]>;
+  nearbyByLevel: Section[][];
 }

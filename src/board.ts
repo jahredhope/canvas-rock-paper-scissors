@@ -1,36 +1,32 @@
 import { Piece, Item } from "./piece";
 import { getDistance, Point } from "./point";
-import { srand } from "./random";
-import { createSections, getNearbySectionsByLevel } from "./section";
+import { createSeed, srand } from "./random";
+import { createSections, getNearbySectionsByLevel, Section } from "./section";
 
-export type BorderType = "solid" | "wrap";
-
-export interface Section {
-  x: number;
-  y: number;
-  /**
-   * Top Left
-   */
-  start: Point;
-  /**
-   * Bottom Right
-   */
-  end: Point;
-  piecesByType: Record<Item, Piece[]>;
-  nearbyByLevel: Section[][];
+export interface State {
+  playing: boolean;
+  speed: number;
+  height: number;
+  width: number;
+  autoSize: boolean;
+  seed: string;
+  fps: number;
+  renderCount: number;
+  lastScale: number;
+  maxItems: number;
+  activeIndex: number;
 }
 
 export class Board {
-  constructor(
-    public height: number,
-    public width: number,
-    public maxItems: number,
-    public borderType: BorderType,
-    private initialSeed: number
-  ) {
-    this.rand = srand(this.initialSeed);
-    this.createSections();
-    this.reset();
+  private constructor(public state: State) {
+    this.rand = srand(0);
+  }
+
+  public static async createBoard(state: State) {
+    const board = new Board(state);
+    board.createSections();
+    await board.reset();
+    return board;
   }
 
   rand: ReturnType<typeof srand>;
@@ -40,17 +36,21 @@ export class Board {
     scissor: [],
     paper: [],
   };
-  speed = 1;
   sections: Section[][] = [];
-  activeIndex = -1;
   winner: Item | null = null;
 
   update() {
-    this.pieces.forEach((v) => v.onTick());
+    for (let i = 0; i < this.state.speed; i++) {
+      if (this.pieces.length < this.state.maxItems) {
+        this.addRandom();
+      }
+      this.pieces.forEach((v) => v.think());
+      this.pieces.forEach((v) => v.move());
+    }
   }
 
   createSections() {
-    this.sections = createSections(this.height, this.width, 30);
+    this.sections = createSections(this.state.height, this.state.width, 30);
 
     this.sections.forEach((r) => {
       r.forEach((s) => {
@@ -60,8 +60,8 @@ export class Board {
     this.pieces.forEach((p) => p.updateSection());
   }
   changeSize(width: number, height: number) {
-    this.width = width;
-    this.height = height;
+    this.state.width = width;
+    this.state.height = height;
     this.createSections();
   }
   getSection(p: Point) {
@@ -72,18 +72,18 @@ export class Board {
     return section;
   }
   nextActive() {
-    this.activeIndex++;
-    this.activeIndex = this.activeIndex % this.pieces.length;
+    this.state.activeIndex++;
+    this.state.activeIndex = this.state.activeIndex % this.pieces.length;
   }
   noActive() {
-    this.activeIndex = -1;
+    this.state.activeIndex = -1;
   }
   addPiece(t: Piece) {
     this.pieces.push(t);
     this.piecesByType[t.item].push(t);
   }
   changeCount(count: number) {
-    this.maxItems = count;
+    this.state.maxItems = count;
     while (this.pieces.length > count) {
       this.removePiece();
     }
@@ -111,8 +111,8 @@ export class Board {
         shortestDistance = distance;
       }
     }
-    if (closest) this.activeIndex = this.pieces.indexOf(closest);
-    else this.activeIndex = -1;
+    if (closest) this.state.activeIndex = this.pieces.indexOf(closest);
+    else this.state.activeIndex = -1;
   }
   addRandom(i?: Item) {
     if (!i) {
@@ -120,8 +120,8 @@ export class Board {
       i = r > 0.66666 ? "paper" : r > 0.33333 ? "scissor" : "rock";
     }
     const t = new Piece(this, i, [
-      this.rand.next().value * this.width,
-      this.rand.next().value * this.height,
+      this.rand.next().value * this.state.width,
+      this.rand.next().value * this.state.height,
     ]);
     this.addPiece(t);
   }
@@ -130,9 +130,10 @@ export class Board {
     if (!t) return;
     this.piecesByType[t.item].splice(this.piecesByType[t.item].indexOf(t), 1);
   }
-  reset() {
-    this.rand = srand(this.initialSeed);
-    this.activeIndex = -1;
+  async reset() {
+    const seed = await createSeed(this.state.seed);
+    this.rand = srand(seed);
+    this.state.activeIndex = -1;
     this.winner = null;
     this.pieces = [];
     this.piecesByType = {
@@ -142,10 +143,72 @@ export class Board {
     };
     this.createSections();
 
-    for (let i = 0; i < this.maxItems / 3; i++) {
+    for (let i = 0; i < this.state.maxItems / 3; i++) {
       this.addRandom("paper");
       this.addRandom("scissor");
       this.addRandom("rock");
     }
+  }
+
+  renderPaused(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    ctx.fillStyle = "#7FFB50";
+    ctx.font = `30px Georgia`;
+    ctx.textAlign = "center";
+    ctx.fillText(`⏸`, canvas.width / 2, 50, 40000);
+  }
+  renderFast(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    ctx.fillStyle = "#7FFB50";
+    ctx.font = `30px Georgia`;
+    ctx.textAlign = "center";
+    ctx.fillText(`⏩`, canvas.width / 2, 50, 40000);
+  }
+
+  renderScores(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    ctx.fillStyle = "#1a1a1a50";
+    ctx.fillRect(0, 0, 120, 170);
+    ctx.fillStyle = "#7FFB50";
+    ctx.font = `15px Georgia`;
+    ctx.textAlign = "left";
+    ctx.fillText(`Total: ${this.pieces.length}`, 10, 30, 4000);
+    ctx.fillText(
+      `Scissors: ${this.piecesByType["scissor"].length}`,
+      10,
+      60,
+      4000
+    );
+    ctx.fillText(`Rocks: ${this.piecesByType["rock"].length}`, 10, 90, 4000);
+    ctx.fillText(`Papers: ${this.piecesByType["paper"].length}`, 10, 120, 4000);
+
+    ctx.fillText(`FPS: ${this.state.fps}`, 10, 150, 500);
+  }
+
+  renderWinner(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    ctx.save();
+    ctx.fillStyle = "#7FFB50";
+    ctx.font = `30px Georgia`;
+    ctx.textAlign = "center";
+    ctx.fillText(
+      `Winner: ${this.winner}`,
+      canvas.width / 2,
+      canvas.height / 2 - 50,
+      40000
+    );
+    ctx.fillText(
+      `Press R to restart`,
+      canvas.width / 2,
+      canvas.height / 2 + 50,
+      40000
+    );
+    ctx.restore();
+  }
+  renderPieces(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+    ctx.save();
+    this.state.lastScale = Math.min(
+      canvas.width / this.state.width,
+      canvas.height / this.state.height
+    );
+    ctx.scale(this.state.lastScale, this.state.lastScale);
+    this.pieces.forEach((v, i) => v.onDraw(ctx, i === this.state.activeIndex));
+    ctx.restore();
   }
 }

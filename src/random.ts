@@ -18,3 +18,17 @@ export function* srand(seed: number): Generator<number, number> {
     yield seed / Math.pow(2, 32);
   }
 }
+
+/**
+ * Creates a valid seed for random number generation from a string
+ * @param str Any string of any length. Case insensitive.
+ * @returns
+ */
+export async function createSeed(str: string) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(str.toLowerCase());
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  const intArr = new Int32Array(hash);
+  const value = intArr[0];
+  return value;
+}

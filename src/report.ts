@@ -16,7 +16,7 @@ export async function reportPerf() {
     renders: number
   ) {
     await new Promise((r) => setTimeout(r, 10));
-    const board = new Board(width, height, count, "solid");
+    const board = new Board(width, height, count, "solid", Math.random());
     const end = start();
     for (let i = 0; i < renders; i++) {
       board.update();
