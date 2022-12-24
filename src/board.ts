@@ -1,5 +1,6 @@
 import { Piece, Item } from "./piece";
 import { getDistance, Point } from "./point";
+import { srand } from "./random";
 import { createSections, getNearbySectionsByLevel } from "./section";
 
 export type BorderType = "solid" | "wrap";
@@ -24,12 +25,15 @@ export class Board {
     public height: number,
     public width: number,
     public maxItems: number,
-    public borderType: BorderType
+    public borderType: BorderType,
+    private initialSeed: number
   ) {
+    this.rand = srand(this.initialSeed);
     this.createSections();
     this.reset();
   }
 
+  rand: ReturnType<typeof srand>;
   pieces: Piece[] = [];
   piecesByType: Record<Item, Piece[]> = {
     rock: [],
@@ -62,8 +66,8 @@ export class Board {
   }
   getSection(p: Point) {
     const section = this.sections
-      .find((r) => p.y < r[0].end.y)
-      ?.find((s) => p.x < s.end.x);
+      .find((r) => p[1] < r[0].end[1])
+      ?.find((s) => p[0] < s.end[0]);
     if (!section) throw new Error("No section for point");
     return section;
   }
@@ -112,13 +116,13 @@ export class Board {
   }
   addRandom(i?: Item) {
     if (!i) {
-      const r = Math.random();
+      const r = this.rand.next().value;
       i = r > 0.66666 ? "paper" : r > 0.33333 ? "scissor" : "rock";
     }
-    const t = new Piece(this, i, {
-      x: Math.random() * this.width,
-      y: Math.random() * this.height,
-    });
+    const t = new Piece(this, i, [
+      this.rand.next().value * this.width,
+      this.rand.next().value * this.height,
+    ]);
     this.addPiece(t);
   }
   removePiece() {
@@ -127,6 +131,7 @@ export class Board {
     this.piecesByType[t.item].splice(this.piecesByType[t.item].indexOf(t), 1);
   }
   reset() {
+    this.rand = srand(this.initialSeed);
     this.activeIndex = -1;
     this.winner = null;
     this.pieces = [];

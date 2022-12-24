@@ -8,6 +8,10 @@ import {
   Point,
 } from "./point";
 
+import scissorSrc from "./assets/scissors_emoji_apple.png";
+import paperSrc from "./assets/page_emoji_apple.png";
+import rockSrc from "./assets/rock_emoji_apple.png";
+
 export type Item = "rock" | "paper" | "scissor";
 
 const mapItemToPrey: Record<Item, Item> = {
@@ -19,6 +23,19 @@ const mapItemToPredator: Record<Item, Item> = {
   scissor: "rock",
   paper: "scissor",
   rock: "paper",
+};
+
+const scissorImg = new Image();
+scissorImg.src = scissorSrc;
+const paperImg = new Image();
+paperImg.src = paperSrc;
+const rockImg = new Image();
+rockImg.src = rockSrc;
+
+const mapItemToImage: Record<Item, HTMLImageElement> = {
+  scissor: scissorImg,
+  paper: paperImg,
+  rock: rockImg,
 };
 
 function getClosestTo(
@@ -33,7 +50,7 @@ function getClosestTo(
         continue;
       }
       if (
-        Math.abs(curr.pos.x - v.pos.x) + Math.abs(curr.pos.y - v.pos.y) >
+        Math.abs(curr.pos[0] - v.pos[0]) + Math.abs(curr.pos[1] - v.pos[1]) >
         shortestDistance * 1.45
       )
         continue;
@@ -58,7 +75,7 @@ export class Piece {
     this.section.piecesByType[this.item].push(this);
   }
   section: Section;
-  dir: Point = { x: 0, y: 0 };
+  dir: Point = [0, 0];
   size: number;
   speed = 1;
   flash = 0;
@@ -101,16 +118,16 @@ export class Piece {
   }
   drawArrow(ctx: CanvasRenderingContext2D, p: Point, color: string, m = 1) {
     ctx.beginPath();
-    ctx.moveTo(this.pos.x, this.pos.y);
+    ctx.moveTo(this.pos[0], this.pos[1]);
     const tip = addition(this.pos, multiply(p, m));
-    ctx.lineTo(tip.x, tip.y);
+    ctx.lineTo(tip[0], tip[1]);
     ctx.lineWidth = this.size / 2;
     ctx.strokeStyle = color;
     ctx.stroke();
   }
   drawCircle(ctx: CanvasRenderingContext2D, color: string) {
     ctx.beginPath();
-    ctx.arc(this.pos.x, this.pos.y, this.size * 2, 0, 2 * Math.PI, false);
+    ctx.arc(this.pos[0], this.pos[1], this.size * 2, 0, 2 * Math.PI, false);
     ctx.fillStyle = color;
     ctx.fill();
   }
@@ -130,8 +147,8 @@ export class Piece {
         this.maxFlash - Math.abs(this.flash - this.maxFlash / 2);
       ctx.beginPath();
       ctx.arc(
-        this.pos.x,
-        this.pos.y,
+        this.pos[0],
+        this.pos[1],
         this.size + additionalSize,
         0,
         2 * Math.PI,
@@ -142,15 +159,29 @@ export class Piece {
     }
     if (this.shouldDrawBoundary) {
       ctx.beginPath();
-      ctx.arc(this.pos.x, this.pos.y, this.size, 0, 2 * Math.PI, false);
+      ctx.arc(this.pos[0], this.pos[1], this.size, 0, 2 * Math.PI, false);
       ctx.fillStyle = "#FFFFFF";
       ctx.fill();
     }
-    ctx.fillStyle = this.getColor();
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = `${this.size * 2}px Georgia`;
-    ctx.fillText(this.getText(), this.pos.x, this.pos.y, this.size * 20);
+    this.drawIcon(ctx);
+  }
+  drawIcon(ctx: CanvasRenderingContext2D) {
+    const asText = true;
+    if (asText) {
+      ctx.fillStyle = this.getColor();
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.font = `${this.size * 2}px Georgia`;
+      ctx.fillText(this.getText(), this.pos[0], this.pos[1], this.size * 20);
+    } else {
+      ctx.drawImage(
+        mapItemToImage[this.item],
+        this.pos[0],
+        this.pos[1],
+        this.size * 2,
+        this.size * 2
+      );
+    }
   }
   startFlash() {
     this.flash = this.maxFlash;
@@ -183,7 +214,7 @@ export class Piece {
     }
     let { closest: closestAlly, distance: distanceToAlly } =
       this.getClosestToByType(this.item, 1);
-    let directionToMove: Point = { x: 0, y: 0 };
+    let directionToMove: Point = [0, 0];
     if (closestPrey) {
       this.forceFromPrey = normalize(difference(closestPrey.pos, this.pos));
       if (closestPredator) {
@@ -220,30 +251,30 @@ export class Piece {
 
     this.dir = directionToMove;
 
-    this.pos.x += directionToMove.x * this.speed;
-    this.pos.y += directionToMove.y * this.speed;
+    this.pos[0] += directionToMove[0] * this.speed;
+    this.pos[1] += directionToMove[1] * this.speed;
 
     if (this.board.borderType === "wrap") {
       // Wrap
-      if (this.pos.x < 0) this.pos.x += this.board.width;
-      if (this.pos.y < 0) this.pos.y += this.board.height;
-      if (this.pos.x > this.board.width - 0) this.pos.x -= this.board.width;
-      if (this.pos.y > this.board.height - 0) this.pos.y -= this.board.height;
+      if (this.pos[0] < 0) this.pos[0] += this.board.width;
+      if (this.pos[1] < 0) this.pos[1] += this.board.height;
+      if (this.pos[0] > this.board.width - 0) this.pos[0] -= this.board.width;
+      if (this.pos[1] > this.board.height - 0) this.pos[1] -= this.board.height;
     } else {
       // Border
-      if (this.pos.x < this.size) this.pos.x = this.size;
-      if (this.pos.y < this.size) this.pos.y = this.size;
-      if (this.pos.x > this.board.width - this.size)
-        this.pos.x = this.board.width - this.size;
-      if (this.pos.y > this.board.height - this.size)
-        this.pos.y = this.board.height - this.size;
+      if (this.pos[0] < this.size) this.pos[0] = this.size;
+      if (this.pos[1] < this.size) this.pos[1] = this.size;
+      if (this.pos[0] > this.board.width - this.size)
+        this.pos[0] = this.board.width - this.size;
+      if (this.pos[1] > this.board.height - this.size)
+        this.pos[1] = this.board.height - this.size;
     }
 
     if (
-      this.pos.x < this.section.start.x ||
-      this.pos.x > this.section.end.x ||
-      this.pos.y < this.section.start.y ||
-      this.pos.y > this.section.end.y
+      this.pos[0] < this.section.start[0] ||
+      this.pos[0] > this.section.end[0] ||
+      this.pos[1] < this.section.start[1] ||
+      this.pos[1] > this.section.end[1]
     ) {
       this.section.piecesByType[this.item].splice(
         this.section.piecesByType[this.item].indexOf(this),

@@ -1,24 +1,21 @@
-export interface Point {
-  x: number;
-  y: number;
-}
+export type Point = [x: number, y: number];
 
 export const getDistance = (p1: Point, p2: Point) =>
-  Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+  Math.sqrt(Math.pow(p1[0] - p2[0], 2) + Math.pow(p1[1] - p2[1], 2));
 
 export const normalize = (p: Point): Point => {
-  var length = Math.sqrt(p.x * p.x + p.y * p.y);
-  return { x: p.x / length || 0, y: (p.y = p.y / length || 0) };
+  var length = Math.sqrt(p[0] * p[0] + p[1] * p[1]);
+  return [p[0] / length || 0, (p[1] = p[1] / length || 0)];
 };
-export const difference = (p1: Point, p2: Point): Point => ({
-  x: p1.x - p2.x,
-  y: p1.y - p2.y,
-});
-export const addition = (p1: Point, p2: Point): Point => ({
-  x: p1.x + p2.x,
-  y: p1.y + p2.y,
-});
-export const multiply = (p: Point, multiple: number): Point => ({
-  x: p.x * multiple,
-  y: p.y * multiple,
-});
+export const difference = (p1: Point, p2: Point): Point => [
+  p1[0] - p2[0],
+  p1[1] - p2[1],
+];
+export const addition = (p1: Point, p2: Point): Point => [
+  p1[0] + p2[0],
+  p1[1] + p2[1],
+];
+export const multiply = (p: Point, multiple: number): Point => [
+  p[0] * multiple,
+  p[1] * multiple,
+];

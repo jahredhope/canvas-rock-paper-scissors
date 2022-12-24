@@ -23,14 +23,8 @@ export function createSections(
       sections[y][x] = {
         x,
         y,
-        start: {
-          x: (x * width) / xCount,
-          y: (y * height) / yCount,
-        },
-        end: {
-          x: ((x + 1) * width) / xCount,
-          y: ((y + 1) * height) / yCount,
-        },
+        start: [(x * width) / xCount, (y * height) / yCount],
+        end: [((x + 1) * width) / xCount, ((y + 1) * height) / yCount],
         nearbyByLevel: [],
         piecesByType: {
           rock: [],
@@ -58,15 +52,15 @@ export function getNearbySections(
   const max = Math.floor(Math.pow(level + 1, 1.7) + 1);
 
   const getFromAll = (p: Point) => {
-    const v = all[p.y]?.[p.x];
+    const v = all[p[1]]?.[p[0]];
     return v;
   };
   for (let i = min; i < max; i++) {
     for (let j = 0; j < i * 2; j++) {
-      res.push(getFromAll({ y: y - i, x: x - i + j }));
-      res.push(getFromAll({ y: y + i - j, x: x - i }));
-      res.push(getFromAll({ y: y - i + j, x: x + i }));
-      res.push(getFromAll({ y: y + i, x: x + i - j }));
+      res.push(getFromAll([x - i + j, y - i]));
+      res.push(getFromAll([x - i, y + i - j]));
+      res.push(getFromAll([x + i, y - i + j]));
+      res.push(getFromAll([x + i - j, y + i]));
     }
   }
   return res.filter((v) => {

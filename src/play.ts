@@ -11,9 +11,9 @@ export function playGame() {
   if (!canvas) {
     throw new Error("Unable to find canvas");
   }
-
+  let lastScale = 1;
   canvas.onclick = (e) => {
-    board.selectPoint({ x: e.clientX, y: e.clientY });
+    board.selectPoint([e.clientX / lastScale, e.clientY / lastScale]);
   };
 
   function onChangeCount() {
@@ -34,18 +34,22 @@ export function playGame() {
   canvas.width = document.body.scrollWidth;
   canvas.height = document.body.scrollHeight;
 
-  const _maxItems = Math.min(
-    Math.ceil(canvas.height * canvas.width * 0.0004),
-    600
-  );
+  const autoSize = true;
+
+  const boardHeight = autoSize ? canvas.height : 500;
+  const boardWidth = autoSize ? canvas.width : 500;
+
+  const _maxItems = Math.min(Math.ceil(boardHeight * boardWidth * 0.0004), 600);
   countInput.value = _maxItems.toString();
-  const board = new Board(canvas.height, canvas.width, _maxItems, "solid");
+  const board = new Board(boardHeight, boardWidth, _maxItems, "solid", 123);
 
   function onResize() {
     canvas.width = document.body.scrollWidth;
     canvas.height = document.body.scrollHeight;
 
-    board.changeSize(canvas.width, canvas.height);
+    if (autoSize) {
+      board.changeSize(canvas.width, canvas.height);
+    }
   }
 
   window.onresize = onResize;
@@ -141,6 +145,36 @@ export function playGame() {
     ctx.fillText(`FPS: ${lastFps}`, 10, 150, 500);
   }
 
+  function renderWinner() {
+    ctx.save();
+    ctx.fillStyle = "#7FFB50";
+    ctx.font = `30px Georgia`;
+    ctx.textAlign = "center";
+    ctx.fillText(
+      `Winner: ${board.winner}`,
+      canvas.width / 2,
+      canvas.height / 2 - 50,
+      40000
+    );
+    ctx.fillText(
+      `Press R to restart`,
+      canvas.width / 2,
+      canvas.height / 2 + 50,
+      40000
+    );
+    ctx.restore();
+  }
+  function renderPieces() {
+    ctx.save();
+    lastScale = Math.min(
+      canvas.width / board.width,
+      canvas.height / board.height
+    );
+    ctx.scale(lastScale, lastScale);
+    board.pieces.forEach((v, i) => v.onDraw(ctx, i === board.activeIndex));
+    ctx.restore();
+  }
+
   function render() {
     i++;
     requestedAnimationFrame = null;
@@ -153,25 +187,9 @@ export function playGame() {
       }
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    board.pieces.forEach((v, i) => v.onDraw(ctx, i === board.activeIndex));
+    renderPieces();
 
-    if (board.winner) {
-      ctx.fillStyle = "#7FFB50";
-      ctx.font = `30px Georgia`;
-      ctx.textAlign = "center";
-      ctx.fillText(
-        `Winner: ${board.winner}`,
-        canvas.width / 2,
-        canvas.height / 2 - 50,
-        40000
-      );
-      ctx.fillText(
-        `Press R to restart`,
-        canvas.width / 2,
-        canvas.height / 2 + 50,
-        40000
-      );
-    }
+    if (board.winner) renderWinner();
     if (board.speed > 1) renderFast();
     if (!playing && !board.winner) renderPaused();
 
