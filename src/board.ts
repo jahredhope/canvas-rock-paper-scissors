@@ -1,5 +1,5 @@
 import { Piece, Item } from "./piece";
-import { getDistance, Point } from "./point";
+import { getSquareDistance, Point } from "./point";
 import { createSeed, srand } from "./random";
 import { createSections, getNearbySectionsByLevel, Section } from "./section";
 
@@ -8,6 +8,7 @@ export interface State {
   speed: number;
   height: number;
   width: number;
+  depth: number;
   autoSize: boolean;
   seed: string;
   fps: number;
@@ -15,6 +16,7 @@ export interface State {
   lastScale: number;
   maxItems: number;
   activeIndex: number;
+  hideUI: boolean;
 }
 
 export class Board {
@@ -36,7 +38,7 @@ export class Board {
     scissor: [],
     paper: [],
   };
-  sections: Section[][] = [];
+  sections: ReturnType<typeof createSections> = [];
   winner: Item | null = null;
 
   update() {
@@ -103,9 +105,9 @@ export class Board {
   }
   selectPoint(pos: Point) {
     let closest: Piece | null = null;
-    let shortestDistance = 50;
+    let shortestDistance = 50 * 50;
     for (let v of this.pieces) {
-      const distance = getDistance(pos, v.pos);
+      const distance = getSquareDistance(pos, v.pos);
       if (distance < shortestDistance) {
         closest = v;
         shortestDistance = distance;

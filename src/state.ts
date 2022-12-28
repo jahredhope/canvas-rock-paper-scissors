@@ -44,6 +44,8 @@ export function getInitialState(canvas: HTMLCanvasElement): State {
   return {
     height,
     width,
+    depth: 200,
+    hideUI: false,
     maxItems,
     autoSize,
     renderCount: 0,

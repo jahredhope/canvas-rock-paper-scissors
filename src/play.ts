@@ -44,11 +44,14 @@ export async function playGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     board.renderPieces(ctx, canvas);
 
-    if (board.winner) board.renderWinner(ctx, canvas);
-    if (board.state.speed > 1) board.renderFast(ctx, canvas);
-    if (!board.state.playing && !board.winner) board.renderPaused(ctx, canvas);
+    if (!board.state.hideUI) {
+      if (board.winner) board.renderWinner(ctx, canvas);
+      if (board.state.speed > 1) board.renderFast(ctx, canvas);
+      if (!board.state.playing && !board.winner)
+        board.renderPaused(ctx, canvas);
 
-    board.renderScores(ctx, canvas);
+      board.renderScores(ctx, canvas);
+    }
 
     // Repeat
     if (requestedAnimationFrame === null)

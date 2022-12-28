@@ -1,11 +1,13 @@
 import { Item, Piece } from "./piece";
 import { Point } from "./point";
 
+type Sections = Section[][];
+
 export function createSections(
   height: number,
   width: number,
   divisions: number
-) {
+): Sections {
   const idealDivisions = divisions;
   let xCount;
   let yCount;
@@ -16,7 +18,8 @@ export function createSections(
     xCount = idealDivisions;
     yCount = Math.ceil(height / (width / idealDivisions));
   }
-  const sections: Section[][] = [];
+  const sections: Sections = [];
+
   for (let y = 0; y < yCount; y++) {
     sections[y] ||= [];
     for (let x = 0; x < xCount; x++) {
@@ -68,7 +71,7 @@ export function getNearbySections(
   });
 }
 
-export function getNearbySectionsByLevel(section: Section, all: Section[][]) {
+export function getNearbySectionsByLevel(section: Section, all: Sections) {
   const res = [];
   for (let i = 0; true; i++) {
     const arr = getNearbySections(section, all, i);
@@ -90,5 +93,5 @@ export interface Section {
    */
   end: Point;
   piecesByType: Record<Item, Piece[]>;
-  nearbyByLevel: Section[][];
+  nearbyByLevel: Sections;
 }

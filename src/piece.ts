@@ -2,8 +2,9 @@ import { Board } from "./board";
 import {
   addition,
   difference,
-  getDistance,
+  getSquareDistance,
   multiply,
+  newPoint,
   normalize,
   Point,
 } from "./point";
@@ -11,6 +12,7 @@ import {
 import scissorSrc from "./assets/scissors_emoji_apple.png";
 import paperSrc from "./assets/page_emoji_apple.png";
 import rockSrc from "./assets/rock_emoji_apple.png";
+
 import { Section } from "./section";
 
 export type Item = "rock" | "paper" | "scissor";
@@ -45,8 +47,18 @@ function getClosestTo(
 ): { closest: Piece | null; distance: number } {
   let closest: Piece | null = null;
   let shortestDistance = Number.MAX_VALUE;
-  for (let arr of arrOfArr) {
-    for (let v of arr) {
+  let shortestSquaredDistance = Number.MAX_VALUE;
+  for (
+    let arrOfArrIndex = 0;
+    arrOfArrIndex < arrOfArr.length;
+    arrOfArrIndex++
+  ) {
+    for (
+      let arrIndex = 0;
+      arrIndex < arrOfArr[arrOfArrIndex].length;
+      arrIndex++
+    ) {
+      const v = arrOfArr[arrOfArrIndex][arrIndex];
       if (v === curr) {
         continue;
       }
@@ -55,12 +67,16 @@ function getClosestTo(
         shortestDistance * 1.45
       )
         continue;
-      const distance = getDistance(curr.pos, v.pos);
-      if (distance < shortestDistance) {
+      const squaredDistance = getSquareDistance(curr.pos, v.pos);
+      if (squaredDistance < shortestSquaredDistance) {
         closest = v;
-        shortestDistance = distance;
+        shortestSquaredDistance = squaredDistance;
+        shortestDistance = Math.sqrt(squaredDistance);
       }
     }
+  }
+  if (!closest) {
+    return { closest, distance: Number.MAX_VALUE };
   }
   return { closest, distance: shortestDistance };
 }
@@ -76,7 +92,7 @@ export class Piece {
     this.section.piecesByType[this.item].push(this);
   }
   section: Section;
-  dir: Point = [0, 0];
+  dir = newPoint();
   size: number;
   speed = 1;
   shouldDrawBoundary = false;
@@ -194,7 +210,7 @@ export class Piece {
     }
     let { closest: closestAlly, distance: distanceToAlly } =
       this.getClosestToByType(this.item, 1);
-    let directionToMove: Point = [0, 0];
+    let directionToMove = newPoint();
     if (closestPrey) {
       this.forceFromPrey = normalize(difference(closestPrey.pos, this.pos));
       if (closestPredator) {
@@ -232,8 +248,7 @@ export class Piece {
     this.dir = directionToMove;
   }
   move() {
-    this.pos[0] += this.dir[0] * this.speed;
-    this.pos[1] += this.dir[1] * this.speed;
+    this.pos = addition(this.pos, multiply(this.dir, this.speed));
 
     if (this.pos[0] < this.size) this.pos[0] = this.size;
     if (this.pos[1] < this.size) this.pos[1] = this.size;

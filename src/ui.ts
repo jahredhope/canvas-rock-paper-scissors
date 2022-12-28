@@ -1,4 +1,5 @@
 import { Board } from "./board";
+import { multiply, Point } from "./point";
 
 export function getUIElements() {
   return {
@@ -14,6 +15,7 @@ export function getUIElements() {
     heightInput: document.getElementById("height") as HTMLInputElement,
     widthInput: document.getElementById("width") as HTMLInputElement,
     autoSizeInput: document.getElementById("autosize") as HTMLInputElement,
+    hideInput: document.getElementById("hide") as HTMLInputElement,
 
     seedInput: document.getElementById("seed") as HTMLInputElement,
   };
@@ -30,6 +32,7 @@ export function setupUI(
   elements.countInput.value = board.state.maxItems.toString();
   elements.seedInput.value = board.state.seed.toString();
   elements.autoSizeInput.checked = board.state.autoSize;
+  elements.hideInput.checked = board.state.hideUI;
 
   function onResize() {
     canvas.width = document.body.scrollWidth;
@@ -47,6 +50,9 @@ export function setupUI(
   elements.autoSizeInput.onchange = (e) => {
     board.state.autoSize = (e.target as HTMLInputElement).checked;
     if (board.state.autoSize) onResize();
+  };
+  elements.hideInput.onchange = (e) => {
+    board.state.hideUI = (e.target as HTMLInputElement).checked;
   };
 
   elements.heightInput.onchange = onResize;
@@ -79,10 +85,11 @@ export function setupUI(
   elements.resetButton.onclick = onReset;
 
   canvas.onclick = (e) => {
-    board.selectPoint([
-      e.clientX / board.state.lastScale,
-      e.clientY / board.state.lastScale,
-    ]);
+    const p: Point = multiply(
+      [e.clientX, e.clientY],
+      1 / board.state.lastScale
+    );
+    board.selectPoint(p);
   };
 
   function onChangeCount() {
