@@ -41,7 +41,7 @@ export function getInitialState(): State {
 
   const height = !rHeight ? document.body.scrollHeight : rHeight;
   const width = !rWidth ? document.body.scrollWidth : rWidth;
-  const items = rMaxItems || Math.min(Math.ceil(height * width * 0.0004), 600);
+  const items = rMaxItems || Math.min(Math.ceil(height * width * 0.0003), 600);
 
   const maxDimension = Math.max(height, width);
 
@@ -50,7 +50,7 @@ export function getInitialState(): State {
     Math.ceil(maxDimension / 1000);
   const size =
     Number.parseInt(params.get("size") || "") ||
-    Math.ceil(maxDimension / 400) + 5;
+    Math.ceil(maxDimension / 400) + 6;
 
   return {
     height,

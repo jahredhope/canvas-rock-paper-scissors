@@ -7,8 +7,9 @@ export function getUIElements() {
     sidePanel: document.getElementById("side") as HTMLDivElement,
 
     pauseButton: document.getElementById("pause") as HTMLButtonElement,
-    resetButton: document.getElementById("reset") as HTMLButtonElement,
-    reset2Button: document.getElementById("reset2") as HTMLButtonElement,
+    resetButtons: document.getElementsByName(
+      "reset"
+    ) as NodeListOf<HTMLButtonElement>,
     fastFwdButton: document.getElementById("fast") as HTMLButtonElement,
     moreButton: document.getElementById("more") as HTMLButtonElement,
     sizeToScreenButton: document.getElementById(
@@ -137,8 +138,7 @@ export function setupUI(
     initialize();
   }
   elements.pauseButton.onclick = onPause;
-  elements.resetButton.onclick = onReset;
-  elements.reset2Button.onclick = onReset;
+  elements.resetButtons.forEach((el) => (el.onclick = onReset));
 
   canvas.onclick = (e: MouseEvent) => {
     const el = e.target as HTMLCanvasElement;
