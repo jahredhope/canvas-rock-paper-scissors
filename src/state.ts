@@ -1,4 +1,24 @@
-import { Board, State } from "./board";
+// import { Board } from "./board.ts.old";
+
+import { Item } from "./render-piece";
+
+export interface State {
+  playing: boolean;
+  height: number;
+  width: number;
+  depth: number;
+  seed: string;
+  fps: number;
+  renderCount: number;
+  size: number;
+  speed: number;
+  items: number;
+  activeIndex: number;
+  hideUI: boolean;
+  winner: Item | null;
+  rate: number;
+  stats: Record<Item, number>;
+}
 
 function getRandomSeed() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -9,58 +29,48 @@ function getRandomSeed() {
   return res;
 }
 
-export function getInitialState(canvas: HTMLCanvasElement): State {
+export function getInitialState(): State {
   let params = new URL(window.location.toString()).searchParams;
   const rHeight = Number.parseInt(params.get("height") || "") || null;
   const rWidth = Number.parseInt(params.get("width") || "") || null;
   const rMaxItems = Number.parseInt(params.get("items") || "") || null;
 
-  const autoSize = params.get("autosize") === "true" || (!rHeight && !rWidth);
-  const speed = Number.parseInt(params.get("speed") || "") || 1;
+  const rate = Number.parseInt(params.get("rate") || "") || 60;
+  const paused = params.has("paused") ? true : false;
   const seed = params.get("seed")?.toUpperCase() || getRandomSeed();
 
-  const height = !rHeight || autoSize ? canvas.height : rHeight;
-  const width = !rWidth || autoSize ? canvas.width : rWidth;
-  const maxItems =
-    rMaxItems || Math.min(Math.ceil(height * width * 0.0004), 600);
+  const height = !rHeight ? document.body.scrollHeight : rHeight;
+  const width = !rWidth ? document.body.scrollWidth : rWidth;
+  const items = rMaxItems || Math.min(Math.ceil(height * width * 0.0004), 600);
 
-  if (height < 100 || width < 100) {
-    console.error("Something went wrong");
-    console.error({
-      rHeight,
-      rWidth,
-      rMaxItems,
-      autoSize,
-      height,
-      width,
-      maxItems,
-      ch: canvas.height,
-      cw: canvas.width,
-      dh: document.body.scrollHeight,
-      dw: document.body.scrollWidth,
-    });
-  }
+  const maxDimension = Math.max(height, width);
+
+  const speed =
+    Number.parseInt(params.get("speed") || "") ||
+    Math.ceil(maxDimension / 1000);
+  const size =
+    Number.parseInt(params.get("size") || "") ||
+    Math.ceil(maxDimension / 400) + 5;
 
   return {
     height,
     width,
     depth: 200,
     hideUI: false,
-    maxItems,
-    autoSize,
+    items,
     renderCount: 0,
     fps: 0,
-    lastScale: 1,
-    playing: true,
+    playing: !paused,
     seed,
+    rate,
     speed,
+    size,
     activeIndex: -1,
+    winner: null,
+    stats: {
+      0: 0,
+      1: 0,
+      2: 0,
+    },
   };
-}
-
-export function setupFPS(board: Board) {
-  setInterval(() => {
-    board.state.fps = board.state.renderCount;
-    board.state.renderCount = 0;
-  }, 1000);
 }

@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "release": "npm run build && surge --domain https://rock-paper-scissors-zero-player.surge.sh dist",
+    "release-dev": "npm run build && surge --domain https://rock-paper-scissors-zero-player-dev.surge.sh dist",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },

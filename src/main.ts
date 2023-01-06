@@ -1,15 +1,12 @@
 import { playGame } from "./play";
-import { reportPerf } from "./report";
 import "./style.css";
+import { createWorker } from "./create-worker";
 
 window.addEventListener(
   "load",
   () => {
-    if (window.location.pathname === "/report") {
-      reportPerf();
-    } else {
-      playGame();
-    }
+    const worker = createWorker();
+    playGame(worker);
   },
   false
 );

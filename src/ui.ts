@@ -1,5 +1,6 @@
-import { Board } from "./board";
-import { multiply, Point } from "./point";
+import { ParentMessage } from "./messages";
+import { Point } from "./point";
+import { State } from "./state";
 
 export function getUIElements() {
   return {
@@ -7,99 +8,156 @@ export function getUIElements() {
 
     pauseButton: document.getElementById("pause") as HTMLButtonElement,
     resetButton: document.getElementById("reset") as HTMLButtonElement,
+    reset2Button: document.getElementById("reset2") as HTMLButtonElement,
     fastFwdButton: document.getElementById("fast") as HTMLButtonElement,
     moreButton: document.getElementById("more") as HTMLButtonElement,
+    sizeToScreenButton: document.getElementById(
+      "size-to-screen"
+    ) as HTMLButtonElement,
+
+    rateSelectButtons: document.getElementsByName(
+      "rate-select"
+    ) as NodeListOf<HTMLButtonElement>,
+    shareButtons: document.getElementsByName(
+      "share"
+    ) as NodeListOf<HTMLButtonElement>,
+    speedSelectButtons: document.getElementsByName(
+      "speed-select"
+    ) as NodeListOf<HTMLButtonElement>,
 
     countInput: document.getElementById("count") as HTMLInputElement,
 
     heightInput: document.getElementById("height") as HTMLInputElement,
     widthInput: document.getElementById("width") as HTMLInputElement,
-    autoSizeInput: document.getElementById("autosize") as HTMLInputElement,
-    hideInput: document.getElementById("hide") as HTMLInputElement,
 
     seedInput: document.getElementById("seed") as HTMLInputElement,
   };
 }
 
 export function setupUI(
-  board: Board,
+  state: State,
   canvas: HTMLCanvasElement,
-  play: () => void
+  play: () => void,
+  fire: (message: ParentMessage) => void,
+  selectPoint: (p: Point) => void,
+  initialize: () => void
 ) {
   const elements = getUIElements();
-  elements.heightInput.value = board.state.height.toString();
-  elements.widthInput.value = board.state.width.toString();
-  elements.countInput.value = board.state.maxItems.toString();
-  elements.seedInput.value = board.state.seed.toString();
-  elements.autoSizeInput.checked = board.state.autoSize;
-  elements.hideInput.checked = board.state.hideUI;
+  elements.heightInput.value = state.height.toString();
+  elements.widthInput.value = state.width.toString();
+  elements.countInput.value = state.items.toString();
+  elements.seedInput.value = state.seed.toString();
 
   function onResize() {
-    canvas.width = document.body.scrollWidth;
-    canvas.height = document.body.scrollHeight;
-
-    if (board.state.autoSize) {
-      board.changeSize(canvas.width, canvas.height);
-      elements.heightInput.value = board.state.height.toString();
-      elements.widthInput.value = board.state.width.toString();
-    } else {
-      board.state.height = Number(elements.heightInput.value);
-      board.state.width = Number(elements.widthInput.value);
-    }
+    state.height = Number(elements.heightInput.value);
+    state.width = Number(elements.widthInput.value);
+    canvas.height = state.height;
+    canvas.width = state.width;
+    fire({ type: "set-size", width: state.width, height: state.height });
   }
-  elements.autoSizeInput.onchange = (e) => {
-    board.state.autoSize = (e.target as HTMLInputElement).checked;
-    if (board.state.autoSize) onResize();
-  };
-  elements.hideInput.onchange = (e) => {
-    board.state.hideUI = (e.target as HTMLInputElement).checked;
-  };
 
   elements.heightInput.onchange = onResize;
   elements.widthInput.onchange = onResize;
 
-  window.onresize = onResize;
+  elements.shareButtons.forEach((el) => {
+    el.onclick = () => {
+      const url = new URL(window.location.origin);
+      const keys: Array<keyof typeof state> = [
+        "seed",
+        "height",
+        "width",
+        "size",
+        "items",
+        "speed",
+      ];
+      for (let key of keys) {
+        if (!state[key]) {
+          return;
+        }
+        url.searchParams.set(key, state[key]!.toString());
+      }
+      if (window.navigator.share) {
+        window.navigator.share({ url: url.toString() });
+      } else {
+        window.navigator.clipboard.writeText(url.toString());
+      }
+    };
+  });
 
-  window.onkeyup = (e) => {
+  // window.onresize = onResize;
+
+  window.document.body.onkeyup = (e) => {
+    if (e.target !== window.document.body) return;
     if (e.key === " ") {
       onPause();
     }
     if (e.key === "w") {
-      board.nextActive();
+      fire({ type: "set-active", index: ++state.activeIndex });
     }
     if (e.key === "Escape") {
-      board.noActive();
+      fire({ type: "set-active", index: -1 });
     }
     if (e.key === "r") onReset();
   };
 
+  elements.rateSelectButtons.forEach((el) => {
+    el.onclick = () => {
+      const val = Number.parseInt(el.value);
+      state.rate = val;
+      fire({ type: "set-framerate", rate: state.rate });
+    };
+  });
+  elements.speedSelectButtons.forEach((el) => {
+    el.onclick = () => {
+      const val = Number.parseInt(el.value);
+      state.speed = val;
+      fire({ type: "set-speed", speed: state.speed });
+    };
+  });
+  elements.sizeToScreenButton.onclick = () => {
+    const height = document.body.scrollHeight;
+    const width = document.body.scrollWidth;
+    elements.heightInput.value = height.toString();
+    elements.widthInput.value = width.toString();
+    onResize();
+  };
+
+  elements.seedInput.onchange = () => {
+    state.seed = elements.seedInput.value;
+    initialize();
+  };
+
   function onPause() {
-    board.state.playing = !board.state.playing;
-    if (board.state.playing) play();
+    fire({ type: "pause" });
+    state.playing = !state.playing;
+    play();
   }
 
   function onReset() {
-    board.reset();
+    initialize();
   }
   elements.pauseButton.onclick = onPause;
   elements.resetButton.onclick = onReset;
+  elements.reset2Button.onclick = onReset;
 
-  canvas.onclick = (e) => {
-    const p: Point = multiply(
-      [e.clientX, e.clientY],
-      1 / board.state.lastScale
-    );
-    board.selectPoint(p);
+  canvas.onclick = (e: MouseEvent) => {
+    const el = e.target as HTMLCanvasElement;
+    if (!el || !(el instanceof HTMLCanvasElement)) {
+      console.warn("Invalid Click Target", el);
+    }
+    const point: Point = [
+      (e.clientX - el.offsetLeft) / el.offsetWidth,
+      (e.clientY - el.offsetTop) / el.offsetHeight,
+    ];
+    selectPoint(point);
   };
 
   function onChangeCount() {
     const value = Number.parseInt(elements.countInput.value);
-    if (value) board.changeCount(value);
+    state.items = value;
+    initialize();
   }
   elements.countInput.onchange = onChangeCount;
-  elements.fastFwdButton.onclick = () => {
-    board.state.speed = board.state.speed === 1 ? 3 : 1;
-  };
 
   elements.moreButton.onclick = () => {
     if (elements.sidePanel.classList.contains("hide"))
