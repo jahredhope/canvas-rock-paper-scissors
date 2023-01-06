@@ -30,7 +30,6 @@ self.onmessage = (message: MessageEvent<ParentMessage>) => {
   if (message.data.type === "set-active") {
     activeIndex = message.data.index;
     if (paused) {
-      console.log("Sending paused update");
       sendUpdate();
     }
   }

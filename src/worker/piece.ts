@@ -4,7 +4,6 @@ import {
   multiply,
   mutAddition,
   mutMultiply,
-  mutRound,
   newPoint,
   normalize,
   Point,
@@ -94,7 +93,7 @@ export class Piece {
           distanceToPredator / (distanceToPrey + distanceToPredator)
         );
       }
-      directionToMove = this.forceFromPrey;
+      mutAddition(directionToMove, this.forceFromPrey);
     } else {
       this.forceFromPrey = null;
     }
@@ -134,7 +133,6 @@ export class Piece {
 
   move() {
     mutAddition(this.pos, multiply(this.dir, this.config.speed));
-    mutRound(this.pos);
     this.ensureWithinBoarders();
 
     this.section = this.section.update(this);

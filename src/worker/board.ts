@@ -43,7 +43,6 @@ export class Board {
   }
 
   changeSize({ width, height }: { width: number; height: number }) {
-    console.log("Change Size", { width, height });
     this.config.width = width;
     this.config.height = height;
     this.pieces.forEach((p) => p.ensureWithinBoarders());

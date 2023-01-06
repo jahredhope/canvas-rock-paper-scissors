@@ -64,7 +64,6 @@ export function drawPiece(
     ctx.font = `${size * 2}px Georgia`;
     ctx.fillText(getText(item), x, y, size * 20);
   } else {
-    // console.log({ size });
     ctx.drawImage(mapItemToImage[item], x - size, y - size, size * 2, size * 2);
   }
 }

@@ -26,8 +26,7 @@ export type ParentMessage =
   | { type: "set-size"; height: number; width: number }
   | { type: "set-active"; index: number }
   | { type: "set-framerate"; rate: number }
-  | { type: "pause" }
-  | { type: "request-update" };
+  | { type: "pause" };
 
 export type UpdateMessage = {
   type: "update";
