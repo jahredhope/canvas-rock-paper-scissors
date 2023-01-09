@@ -119,6 +119,9 @@ export function setupUI(
     if (e.key === "w") {
       fire({ type: "set-active", index: ++state.activeIndex });
     }
+    if (e.key === "h") {
+      toggleHide();
+    }
     if (e.key === "Escape") {
       fire({ type: "set-active", index: -1 });
     }
@@ -195,7 +198,16 @@ export function setupUI(
   };
 
   if (state.hide) {
-    elements.header.classList.add("hide");
-    elements.footer.classList.add("hide");
+    toggleHide();
+  }
+  function toggleHide() {
+    state.hide = !state.hide;
+    if (state.hide) {
+      elements.header.classList.add("hide");
+      elements.footer.classList.add("hide");
+    } else {
+      elements.header.classList.remove("hide");
+      elements.footer.classList.remove("hide");
+    }
   }
 }
