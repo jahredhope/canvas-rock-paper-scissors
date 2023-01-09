@@ -75,7 +75,7 @@ export async function playGame(worker: Worker) {
   setupUI(
     state,
     canvas,
-    play,
+    forceUpdate,
     (message: ParentMessage) => {
       worker.postMessage(message);
     },
@@ -152,12 +152,12 @@ export async function playGame(worker: Worker) {
       if (pendingRender) {
         loop();
       } else {
-        play();
+        forceUpdate();
       }
     }
   });
 
-  function play() {
+  function forceUpdate() {
     if (!requestedAnimationFrame) loop();
   }
 

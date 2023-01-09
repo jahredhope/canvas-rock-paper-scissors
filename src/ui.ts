@@ -41,7 +41,7 @@ export function getUIElements() {
 export function setupUI(
   state: State,
   canvas: HTMLCanvasElement,
-  play: () => void,
+  forceUpdate: () => void,
   fire: (message: ParentMessage) => void,
   selectPoint: (p: Point) => void,
   initialize: () => void
@@ -159,7 +159,7 @@ export function setupUI(
   function onPause() {
     fire({ type: "pause" });
     state.playing = !state.playing;
-    play();
+    forceUpdate();
   }
 
   function onReset() {
@@ -206,9 +206,11 @@ export function setupUI(
     if (state.hide) {
       elements.header.classList.add("hide");
       elements.footer.classList.add("hide");
+      elements.sidePanel.classList.add("hide");
     } else {
       elements.header.classList.remove("hide");
       elements.footer.classList.remove("hide");
     }
+    forceUpdate();
   }
 }
