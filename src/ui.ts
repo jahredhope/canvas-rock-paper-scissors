@@ -198,7 +198,8 @@ export function setupUI(
   };
 
   if (state.hide) {
-    toggleHide();
+    elements.header.classList.add("hide");
+    elements.footer.classList.add("hide");
   }
   function toggleHide() {
     state.hide = !state.hide;
