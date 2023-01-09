@@ -77,7 +77,7 @@ export class Piece {
       this.board.changeItem(closestPrey, this.item);
     }
     let { closest: closestPredator, distance: distanceToPredator } =
-      this.getClosestToByType(mapItemToPredator[this.item], 2);
+      this.getClosestToByType(mapItemToPredator[this.item]);
     this.closestPredator = closestPredator;
     if (closestPredator && distanceToPredator < this.config.size * 1.5) {
       this.board.changeItem(this, closestPredator.item);

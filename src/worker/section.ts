@@ -45,10 +45,6 @@ export class Sections {
             x
           ].nearbyByLevel.map((v) => v.map((s) => s.piecesByType[t]));
         }
-        this.sections[y][x].nearbyByLevel = getNearbySectionsByLevel(
-          this.sections[y][x],
-          this.sections
-        );
       }
     }
   }
