@@ -26,8 +26,8 @@
     <canvas id="canvas-scores"></canvas>
     <div class="backdrop">
       <div id="dialog" class="hide">
-        <div>🎉 Winner: <span id="winner"></span></div>
-        <div>
+        <h1>🎉 <span id="winner"></span> wins!</h1>
+        <div class="inline">
           <button name="reset">Reset</button><button name="share">Share</button>
         </div>
       </div>
@@ -45,20 +45,38 @@
       </div>
       <div>
         <label>Items</label>
-        <input class="normal" id="count" type="number" pattern="\d*" />
+        <input
+          class="normal"
+          id="count"
+          type="number"
+          autocomplete="off"
+          pattern="\d*"
+        />
       </div>
       <button id="size-to-screen">Size to Screen</button>
       <div>
         <label>Height</label>
-        <input class="normal" id="height" type="number" pattern="\d*" />
+        <input
+          class="normal"
+          id="height"
+          type="number"
+          autocomplete="off"
+          pattern="\d*"
+        />
       </div>
       <div>
         <label>Width</label>
-        <input class="normal" id="width" type="number" pattern="\d*" />
+        <input
+          class="normal"
+          id="width"
+          type="number"
+          autocomplete="off"
+          pattern="\d*"
+        />
       </div>
       <div>
         <label>Seed</label>
-        <input class="wide" id="seed" type="text" />
+        <input class="wide" id="seed" type="text" autocomplete="off" />
       </div>
       <div>
         FPS

@@ -32,3 +32,12 @@ export async function createSeed(str: string) {
   const value = Math.abs(intArr[0]);
   return value;
 }
+
+export function getRandomSeed() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let res = "";
+  for (let i = 0; i < 12; i++) {
+    res += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return res;
+}

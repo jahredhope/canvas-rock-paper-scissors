@@ -1,3 +1,4 @@
+import { Point } from "../point";
 import { Piece, Item } from "./piece";
 import { Sections } from "./section";
 
@@ -16,7 +17,7 @@ export class Board {
   ) {
     this.createSections();
     for (let i = 0; i < initPieces.length; i++) {
-      this.addPiece(
+      this._addPiece(
         new Piece(
           initPieces[i].pos,
           initPieces[i].item,
@@ -62,7 +63,10 @@ export class Board {
       p.section = this.sections.add(p);
     });
   }
-  addPiece(t: Piece) {
+  public addPiece(item: Item, pos: Point) {
+    this._addPiece(new Piece(pos, item, this.config, this, this.sections));
+  }
+  private _addPiece(t: Piece) {
     this.pieces.push(t);
     this.piecesByType[t.item].push(t);
   }

@@ -179,9 +179,15 @@ a {
   align-items: center;
   justify-content: center;
   position: fixed;
-  background-color: #1a1a1add;
+  background-color: #222222dd;
   margin: auto;
   padding: 2em;
+}
+
+.inline {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
 }
 
 #dialog.hide {

@@ -1,5 +1,6 @@
 import { ParentMessage } from "./messages";
 import { Point } from "./point";
+import { getRandomSeed } from "./random";
 import { State } from "./state";
 
 export function getUIElements() {
@@ -43,6 +44,9 @@ export function setupUI(
   selectPoint: (p: Point) => void,
   initialize: () => void
 ) {
+  // @ts-expect-error Make state available for debug
+  window.debugState = state;
+
   const elements = getUIElements();
   elements.heightInput.value = state.height.toString();
   elements.widthInput.value = state.width.toString();
@@ -92,6 +96,24 @@ export function setupUI(
     if (e.key === " ") {
       onPause();
     }
+    if (e.key === "1") {
+      state.pieceToPlace = 0;
+      state.mode = "click-to-place";
+    }
+    if (e.key === "2") {
+      state.pieceToPlace = 1;
+      state.mode = "click-to-place";
+    }
+    if (e.key === "3") {
+      state.pieceToPlace = 2;
+      state.mode = "click-to-place";
+    }
+    if (e.key === "e") {
+      state.mode = "click-to-place";
+    }
+    if (e.key === "d") {
+      state.mode = "click-to-debug";
+    }
     if (e.key === "w") {
       fire({ type: "set-active", index: ++state.activeIndex });
     }
@@ -124,6 +146,7 @@ export function setupUI(
   };
 
   elements.seedInput.onchange = () => {
+    state.lockSeed = true;
     state.seed = elements.seedInput.value;
     initialize();
   };
@@ -135,6 +158,10 @@ export function setupUI(
   }
 
   function onReset() {
+    if (!state.lockSeed) {
+      state.seed = getRandomSeed();
+      elements.seedInput.value = state.seed.toString();
+    }
     initialize();
   }
   elements.pauseButton.onclick = onPause;

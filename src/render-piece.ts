@@ -64,6 +64,9 @@ export function drawPiece(
     ctx.font = `${size * 2}px Georgia`;
     ctx.fillText(getText(item), x, y, size * 20);
   } else {
+    if (!mapItemToImage[item]) {
+      throw new Error(`unable to render. Missing image for ${item}`);
+    }
     ctx.drawImage(mapItemToImage[item], x - size, y - size, size * 2, size * 2);
   }
 }

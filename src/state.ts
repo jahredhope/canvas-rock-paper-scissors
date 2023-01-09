@@ -1,5 +1,6 @@
 // import { Board } from "./board.ts.old";
 
+import { getRandomSeed } from "./random";
 import { Item } from "./render-piece";
 
 export interface State {
@@ -17,31 +18,30 @@ export interface State {
   hideUI: boolean;
   winner: Item | null;
   rate: number;
+  mode: "click-to-place" | "click-to-debug";
   stats: Record<Item, number>;
-}
-
-function getRandomSeed() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let res = "";
-  for (let i = 0; i < 12; i++) {
-    res += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return res;
+  pieceToPlace: Item;
+  lockSeed: boolean;
 }
 
 export function getInitialState(): State {
   let params = new URL(window.location.toString()).searchParams;
   const rHeight = Number.parseInt(params.get("height") || "") || null;
   const rWidth = Number.parseInt(params.get("width") || "") || null;
-  const rMaxItems = Number.parseInt(params.get("items") || "") || null;
+  const rMaxItems =
+    params.has("items") &&
+    Number.isNaN(Number.parseInt(params.get("items") || ""))
+      ? Number.parseInt(params.get("items") || "")
+      : null;
 
   const rate = Number.parseInt(params.get("rate") || "") || 60;
   const paused = params.has("paused") ? true : false;
+  const lockSeed = params.get("seed") ? true : false;
   const seed = params.get("seed")?.toUpperCase() || getRandomSeed();
 
   const height = !rHeight ? document.body.scrollHeight : rHeight;
   const width = !rWidth ? document.body.scrollWidth : rWidth;
-  const items = rMaxItems || Math.min(Math.ceil(height * width * 0.0003), 600);
+  const items = rMaxItems ?? Math.min(Math.ceil(height * width * 0.0003), 600);
 
   const maxDimension = Math.max(height, width);
 
@@ -62,11 +62,14 @@ export function getInitialState(): State {
     fps: 0,
     playing: !paused,
     seed,
+    lockSeed,
     rate,
     speed,
     size,
     activeIndex: -1,
     winner: null,
+    mode: "click-to-place",
+    pieceToPlace: 0,
     stats: {
       0: 0,
       1: 0,

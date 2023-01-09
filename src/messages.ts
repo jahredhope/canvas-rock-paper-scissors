@@ -22,6 +22,7 @@ export type ParentMessage =
       size: number;
       playing: boolean;
     }
+  | { type: "add-piece"; point: Point; item: Item }
   | { type: "set-speed"; speed: number }
   | { type: "set-size"; height: number; width: number }
   | { type: "set-active"; index: number }

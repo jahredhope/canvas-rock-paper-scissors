@@ -87,21 +87,33 @@ export async function playGame(worker: Worker) {
 
     const pointOnCanvas = product(p, [state.width, state.height]);
 
-    let closestIndex: number = -1;
-    let shortestDistance = 50 * 50;
+    if (state.mode === "click-to-debug") {
+      let closestIndex: number = -1;
+      let shortestDistance = 50 * 50;
 
-    for (let i = 0; i < pieces.length; i++) {
-      const distance = getSquareDistance(pointOnCanvas, [
-        latestState[i * 3 + 1],
-        latestState[i * 3 + 2],
-      ]);
-      if (distance < shortestDistance) {
-        closestIndex = i;
-        shortestDistance = distance;
+      for (let i = 0; i < pieces.length; i++) {
+        const distance = getSquareDistance(pointOnCanvas, [
+          latestState[i * 3 + 1],
+          latestState[i * 3 + 2],
+        ]);
+        if (distance < shortestDistance) {
+          closestIndex = i;
+          shortestDistance = distance;
+        }
       }
+      state.activeIndex = closestIndex;
+      worker.postMessage({ type: "set-active", index: state.activeIndex });
     }
-    state.activeIndex = closestIndex;
-    worker.postMessage({ type: "set-active", index: state.activeIndex });
+    if (state.mode === "click-to-place") {
+      console.log("Adding item", state.pieceToPlace);
+      pieces.push({ item: state.pieceToPlace, pos: pointOnCanvas });
+      worker.postMessage({
+        type: "add-piece",
+        point: pointOnCanvas,
+        item: state.pieceToPlace,
+      } as ParentMessage);
+      state.mode = "click-to-debug";
+    }
   }
 
   const drawCounter = createRate((v) => {
@@ -173,7 +185,7 @@ export async function playGame(worker: Worker) {
 
     if (activeItem) drawActive(ctx, activeItem);
 
-    for (let i = 0; i < pieces.length; i++) {
+    for (let i = 0; i < pieces.length && i < latestState.length * 3 + 2; i++) {
       const type = latestState[i * 3 + 0];
       const x = latestState[i * 3 + 1];
       const y = latestState[i * 3 + 2];

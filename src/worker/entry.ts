@@ -13,6 +13,12 @@ function startLoop() {
   }
 }
 
+function forceUpdate() {
+  if (paused) {
+    sendUpdate();
+  }
+}
+
 function stopLoop() {
   if (interval) {
     clearInterval(interval);
@@ -21,17 +27,20 @@ function stopLoop() {
 }
 let paused = false;
 self.onmessage = (message: MessageEvent<ParentMessage>) => {
+  if (message.data.type === "add-piece") {
+    board.addPiece(message.data.item, message.data.point);
+    forceUpdate();
+  }
   if (message.data.type === "set-speed") {
     board.config.speed = message.data.speed;
   }
   if (message.data.type === "set-size") {
     board.changeSize(message.data);
+    forceUpdate();
   }
   if (message.data.type === "set-active") {
     activeIndex = message.data.index;
-    if (paused) {
-      sendUpdate();
-    }
+    forceUpdate();
   }
   if (message.data.type === "pause") {
     paused = !paused;
