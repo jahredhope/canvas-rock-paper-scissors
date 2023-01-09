@@ -21,6 +21,7 @@ export type ParentMessage =
       speed: number;
       size: number;
       playing: boolean;
+      index: number;
     }
   | { type: "add-piece"; point: Point; item: Item }
   | { type: "set-speed"; speed: number }

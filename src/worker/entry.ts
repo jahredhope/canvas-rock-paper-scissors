@@ -54,16 +54,17 @@ self.onmessage = (message: MessageEvent<ParentMessage>) => {
     changeFramerate(message.data.rate);
   }
   if (message.data.type === "initialize") {
-    const { height, width, pieces, speed, size, playing } = message.data;
+    const { height, width, pieces, speed, size, playing, index } = message.data;
     targetFrameRate = message.data.targetFrameRate;
     paused = !playing;
     board = new Board(pieces, {
       height,
       width,
-      activeIndex: -1,
+      activeIndex: index,
       speed,
       size,
     });
+    activeIndex = index;
     startLoop();
   }
 };

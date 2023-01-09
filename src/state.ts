@@ -36,6 +36,9 @@ export function getInitialState(): State {
       : null;
 
   const rate = Number.parseInt(params.get("rate") || "") || 60;
+  const active = params.has("active")
+    ? Number.parseInt(params.get("active") || "")
+    : -1;
   const hide = params.has("hide") ? true : false;
   const paused = params.has("paused") ? true : false;
   const lockSeed = params.get("seed") ? true : false;
@@ -69,7 +72,7 @@ export function getInitialState(): State {
     speed,
     hide,
     size,
-    activeIndex: -1,
+    activeIndex: active,
     winner: null,
     mode: "click-to-debug",
     pieceToPlace: 0,

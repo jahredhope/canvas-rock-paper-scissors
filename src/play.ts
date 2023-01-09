@@ -62,6 +62,7 @@ export async function playGame(worker: Worker) {
       speed: state.speed,
       size: state.size,
       playing: state.playing,
+      index: state.activeIndex,
     } as ParentMessage);
   }
   await initialize();
