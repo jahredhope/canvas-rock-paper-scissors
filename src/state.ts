@@ -30,7 +30,7 @@ export function getInitialState(): State {
   const rWidth = Number.parseInt(params.get("width") || "") || null;
   const rMaxItems =
     params.has("items") &&
-    Number.isNaN(Number.parseInt(params.get("items") || ""))
+    !Number.isNaN(Number.parseInt(params.get("items") || ""))
       ? Number.parseInt(params.get("items") || "")
       : null;
 
