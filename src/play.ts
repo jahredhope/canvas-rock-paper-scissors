@@ -192,7 +192,7 @@ export async function playGame(worker: Worker) {
       drawPiece(ctx, x, y, type, state.size);
     }
 
-    if (!state.hideUI) {
+    if (!state.hide) {
       if (!state.playing && state.winner === null)
         board.renderPaused(ctx, canvas);
 

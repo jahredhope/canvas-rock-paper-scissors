@@ -5,6 +5,8 @@ import { State } from "./state";
 
 export function getUIElements() {
   return {
+    header: document.getElementById("header") as HTMLDivElement,
+    footer: document.getElementById("footer") as HTMLDivElement,
     sidePanel: document.getElementById("side") as HTMLDivElement,
 
     pauseButton: document.getElementById("pause") as HTMLButtonElement,
@@ -191,4 +193,9 @@ export function setupUI(
       elements.sidePanel.classList.remove("hide");
     else elements.sidePanel.classList.add("hide");
   };
+
+  if (state.hide) {
+    elements.header.classList.add("hide");
+    elements.footer.classList.add("hide");
+  }
 }

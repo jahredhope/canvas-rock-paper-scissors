@@ -18,6 +18,7 @@ export interface State {
   hideUI: boolean;
   winner: Item | null;
   rate: number;
+  hide: boolean;
   mode: "click-to-place" | "click-to-debug";
   stats: Record<Item, number>;
   pieceToPlace: Item;
@@ -35,6 +36,7 @@ export function getInitialState(): State {
       : null;
 
   const rate = Number.parseInt(params.get("rate") || "") || 60;
+  const hide = params.has("hide") ? true : false;
   const paused = params.has("paused") ? true : false;
   const lockSeed = params.get("seed") ? true : false;
   const seed = params.get("seed")?.toUpperCase() || getRandomSeed();
@@ -65,10 +67,11 @@ export function getInitialState(): State {
     lockSeed,
     rate,
     speed,
+    hide,
     size,
     activeIndex: -1,
     winner: null,
-    mode: "click-to-place",
+    mode: "click-to-debug",
     pieceToPlace: 0,
     stats: {
       0: 0,
